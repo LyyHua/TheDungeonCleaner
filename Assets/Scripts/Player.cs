@@ -17,12 +17,41 @@ public class Player : MonoBehaviour
     private bool facingRight = true;
     private float xInput;
     
+    [Header("Skin System")]
+    [SerializeField] private Sprite[] availableSkins;
+    [SerializeField] private SpriteRenderer spriteRenderer;
+
+    private void Start()
+    {
+        UpdateSkin();
+    }
+
     private void Update()
     {
         if (isMoving) return;
         
         HandleInput();
         HandleFlip();
+    }
+    
+    private void OnEnable()
+    {
+        UpdateSkin();
+    }
+
+    private void UpdateSkin()
+    {
+        var skinManager = SkinManager.instance;
+        
+        if (skinManager == null)
+            return;
+        
+        var skinId = skinManager.GetSkinId();
+        
+        if (skinId >= 0 && skinId < availableSkins.Length && spriteRenderer != null)
+        {
+            spriteRenderer.sprite = availableSkins[skinId];
+        }
     }
 
     private void HandleInput()
