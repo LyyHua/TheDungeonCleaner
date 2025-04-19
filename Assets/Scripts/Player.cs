@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
@@ -11,20 +10,11 @@ public class Player : MonoBehaviour
     
     [Header("Collision")]
     [SerializeField] private LayerMask wallLayer;
-    
-    private bool isMoving;
-    private Vector3 origPos, targetPos;
-    private bool facingRight = true;
-    private float xInput;
-    
-    [Header("Skin System")]
-    [SerializeField] private Sprite[] availableSkins;
-    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private LayerMask boxCollisionLayer; // assign the Box layer here
 
-    private void Start()
-    {
-        UpdateSkin();
-    }
+    private bool isMoving;
+    private Vector3 origPos;
+    private float xInput;
 
     private void Update()
     {
@@ -34,64 +24,41 @@ public class Player : MonoBehaviour
         HandleFlip();
     }
     
-    private void OnEnable()
-    {
-        UpdateSkin();
-    }
-
-    private void UpdateSkin()
-    {
-        var skinManager = SkinManager.instance;
-        
-        if (skinManager == null)
-            return;
-        
-        var skinId = skinManager.GetSkinId();
-        
-        if (skinId >= 0 && skinId < availableSkins.Length && spriteRenderer != null)
-        {
-            spriteRenderer.sprite = availableSkins[skinId];
-        }
-    }
-
     private void HandleInput()
     {
         xInput = Input.GetAxisRaw("Horizontal");
         
-        if(Input.GetKey(KeyCode.W) && !isMoving)
+        // Combine wall and box collision checks
+        if (Input.GetKey(KeyCode.W) && !isMoving)
             StartCoroutine(MovePlayer(Vector3.up));
-        if(Input.GetKey(KeyCode.A) && !isMoving)
+        if (Input.GetKey(KeyCode.A) && !isMoving)
             StartCoroutine(MovePlayer(Vector3.left));
-        if(Input.GetKey(KeyCode.S) && !isMoving)
+        if (Input.GetKey(KeyCode.S) && !isMoving)
             StartCoroutine(MovePlayer(Vector3.down));
-        if(Input.GetKey(KeyCode.D) && !isMoving)
+        if (Input.GetKey(KeyCode.D) && !isMoving)
             StartCoroutine(MovePlayer(Vector3.right));
-    }
-
-    private void HandleFlip()
-    {
-        if (xInput < 0 && facingRight || xInput > 0 && !facingRight)
-            Flip();
-    }
-    
-    private void Flip()
-    {
-        transform.Rotate(0, 180, 0);
-        facingRight = !facingRight;
     }
     
     private IEnumerator MovePlayer(Vector3 direction)
     {
         isMoving = true;
         origPos = transform.position;
+        
+        // Check for collisions with both wall and box layer
+        RaycastHit2D hitWall = Physics2D.Raycast(transform.position, direction, 1f, wallLayer);
+        RaycastHit2D hitBox = Physics2D.Raycast(transform.position, direction, 1f, boxCollisionLayer);
+        
+        bool canMove = (hitWall.collider == null && hitBox.collider == null);
 
-        // Check if movement is valid
-        var hit = Physics2D.Raycast(transform.position, direction, 1f, wallLayer);
-        var canMove = !hit.collider;
-
-        yield return canMove ? 
-            PerformMove(origPos, origPos + direction, timeToMove) : 
-            PerformBounce(origPos, direction);
+        if (canMove)
+        {
+            yield return PerformMove(origPos, origPos + direction, timeToMove);
+        }
+        else
+        {
+            // Bounce logic if hitting wall or box
+            yield return PerformBounce(origPos, direction);
+        }
 
         isMoving = false;
     }
@@ -112,12 +79,16 @@ public class Player : MonoBehaviour
 
     private IEnumerator PerformBounce(Vector3 startPos, Vector3 direction)
     {
-        var bouncePos = startPos + direction * bounceDistance;
-        
-        // Move toward the wall
+        Vector3 bouncePos = startPos + direction * bounceDistance;
         yield return PerformMove(startPos, bouncePos, bounceTime);
-        
-        // Move back
         yield return PerformMove(bouncePos, startPos, bounceTime);
+    }
+
+    private void HandleFlip()
+    {
+        if (xInput < 0)
+            transform.localScale = new Vector3(-1, 1, 1);
+        else if (xInput > 0)
+            transform.localScale = new Vector3(1, 1, 1);
     }
 }
