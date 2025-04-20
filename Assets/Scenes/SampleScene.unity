@@ -4317,6 +4317,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5675103025810243940, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
+      propertyPath: blackOutlineSprite
+      value: 
+      objectReference: {fileID: 5584533179027898419, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+    - target: {fileID: 5675103025810243940, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
+      propertyPath: whiteOutlineSprite
+      value: 
+      objectReference: {fileID: 7965355984883262689, guid: 2907df9bf080b18419e229650eb97964, type: 3}
+    - target: {fileID: 6208184559536010776, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6208184559536010776, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6208184559536010776, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9030037035267906959, guid: e78388e687432054ebe6c9d1ed47b309, type: 3}
       propertyPath: m_Name
       value: Box
@@ -4448,6 +4468,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2631491857730506591, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2631491857730506591, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2631491857730506591, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3920842498608698382, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.5
@@ -4491,6 +4523,18 @@ PrefabInstance:
     - target: {fileID: 6637371631493743009, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
       propertyPath: m_Name
       value: BoxPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 8705360822740220218, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: requiredColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8705360822740220218, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: requiredColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8705360822740220218, guid: 85b640a2665e8334bb7ca506c780146b, type: 3}
+      propertyPath: requiredColor.r
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -7,28 +7,34 @@ public class Player : MonoBehaviour
     [SerializeField] private float timeToMove = 0.15f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private float bounceTime = 0.05f;
-    
+
     [Header("Collision")]
     [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private LayerMask boxCollisionLayer; // assign the Box layer here
+    [SerializeField] private LayerMask boxCollisionLayer;
 
     private bool isMoving;
     private Vector3 origPos;
     private float xInput;
 
+    private PlayerBoxInteraction playerBoxInteraction; // Reference to PlayerBoxInteraction
+
+    private void Awake()
+    {
+        playerBoxInteraction = GetComponent<PlayerBoxInteraction>();
+    }
+
     private void Update()
     {
         if (isMoving) return;
-        
+
         HandleInput();
         HandleFlip();
     }
-    
+
     private void HandleInput()
     {
         xInput = Input.GetAxisRaw("Horizontal");
-        
-        // Combine wall and box collision checks
+
         if (Input.GetKey(KeyCode.W) && !isMoving)
             StartCoroutine(MovePlayer(Vector3.up));
         if (Input.GetKey(KeyCode.A) && !isMoving)
@@ -43,11 +49,12 @@ public class Player : MonoBehaviour
     {
         isMoving = true;
         origPos = transform.position;
-        
-        // Check for collisions with both wall and box layer
+        // Record the state before moving.
+        playerBoxInteraction.SaveState(null, null);
+
         RaycastHit2D hitWall = Physics2D.Raycast(transform.position, direction, 1f, wallLayer);
         RaycastHit2D hitBox = Physics2D.Raycast(transform.position, direction, 1f, boxCollisionLayer);
-        
+
         bool canMove = (hitWall.collider == null && hitBox.collider == null);
 
         if (canMove)
@@ -56,13 +63,11 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // Bounce logic if hitting wall or box
             yield return PerformBounce(origPos, direction);
         }
-
         isMoving = false;
     }
-    
+
     private IEnumerator PerformMove(Vector3 start, Vector3 end, float duration)
     {
         float elapsedTime = 0;

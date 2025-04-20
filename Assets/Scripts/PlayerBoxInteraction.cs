@@ -1,32 +1,45 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerBoxInteraction : MonoBehaviour
 {
     [Header("Interaction Settings")]
     [SerializeField] private KeyCode grabToggleKey = KeyCode.E;
+    [SerializeField] private KeyCode undoKey = KeyCode.U;
+    [SerializeField] private KeyCode resetKey = KeyCode.R;
     [SerializeField] private float detectionDistance = 0.6f;
     [SerializeField] private float detectionRadius = 0.3f;
     [SerializeField] private LayerMask boxLayer;
-    
+
     [Header("Grid Movement Settings")]
     [SerializeField] private float gridMoveDuration = 0.15f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private LayerMask wallLayer;
 
     private Box currentBox;
+    private Box highlightedBox;
     private bool isDragging = false;
-    private Vector2 lastInputDirection = Vector2.zero;
+    private Vector2 lastInputDirection = Vector2.right;
     private Vector2 grabDirection = Vector2.zero;
     private bool isGridMoving = false;
 
     private Transform playerTransform;
     private Player playerComponent;
 
+    // Undo stack to track individual movements
+    private Stack<(Vector3 playerPos, Vector2 facingDirection, Box box, Vector3? boxPos)> undoStack = new();
+
     private void Awake()
     {
         playerTransform = transform;
         playerComponent = GetComponent<Player>();
+    }
+
+    private void Start()
+    {
+        SaveState(null, null); // Save the initial state
     }
 
     private void Update()
@@ -41,6 +54,8 @@ public class PlayerBoxInteraction : MonoBehaviour
 
             if (input != Vector2.zero)
                 lastInputDirection = input;
+
+            HighlightGrabbableBox();
         }
 
         if (Input.GetKeyDown(grabToggleKey))
@@ -49,6 +64,16 @@ public class PlayerBoxInteraction : MonoBehaviour
                 TryGrabBox();
             else
                 ReleaseBox();
+        }
+
+        if (Input.GetKeyDown(undoKey))
+        {
+            UndoMove();
+        }
+
+        if (Input.GetKeyDown(resetKey))
+        {
+            ResetLevel();
         }
 
         if (isDragging && !isGridMoving)
@@ -62,6 +87,30 @@ public class PlayerBoxInteraction : MonoBehaviour
                 StartCoroutine(DragMove(Vector3.left));
             else if (allowedDir == Vector2.right && Input.GetKeyDown(KeyCode.D))
                 StartCoroutine(DragMove(Vector3.right));
+        }
+    }
+
+    private void HighlightGrabbableBox()
+    {
+        Vector3 detectPoint = playerTransform.position + (Vector3)(lastInputDirection.normalized * detectionDistance);
+        Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
+
+        if (hit != null && hit.CompareTag("Box"))
+        {
+            Box box = hit.GetComponent<Box>();
+            if (box != null && box != highlightedBox)
+            {
+                if (highlightedBox != null)
+                    highlightedBox.SetOutlineColor(false);
+
+                highlightedBox = box;
+                highlightedBox.SetOutlineColor(true);
+            }
+        }
+        else if (highlightedBox != null)
+        {
+            highlightedBox.SetOutlineColor(false);
+            highlightedBox = null;
         }
     }
 
@@ -80,13 +129,13 @@ public class PlayerBoxInteraction : MonoBehaviour
             currentBox = hit.GetComponent<Box>();
             grabDirection = lastInputDirection.normalized;
             isDragging = true;
+
+            currentBox.SetOutlineColor(false);
+
             if (playerComponent)
                 playerComponent.enabled = false;
-            Debug.Log("Box grabbed in direction: " + grabDirection);
-        }
-        else
-        {
-            Debug.Log("No box found in direction: " + lastInputDirection);
+
+            SaveState(currentBox, null); // Save the state when grabbing a box
         }
     }
 
@@ -97,7 +146,6 @@ public class PlayerBoxInteraction : MonoBehaviour
         Vector3 startPosBox = currentBox.transform.position;
         Vector3 endPos = startPosPlayer + direction;
 
-        // Check for wall collision from both player and box positions.
         RaycastHit2D hitPlayer = Physics2D.Raycast(startPosPlayer, direction, 1f, wallLayer);
         RaycastHit2D hitBox = Physics2D.Raycast(startPosBox, direction, 1f, wallLayer);
 
@@ -106,12 +154,11 @@ public class PlayerBoxInteraction : MonoBehaviour
             Vector3 bouncePos = startPosPlayer + direction * bounceDistance;
             yield return MoveBoth(startPosPlayer, bouncePos, gridMoveDuration * 0.33f);
             yield return MoveBoth(bouncePos, startPosPlayer, gridMoveDuration * 0.33f);
-            Debug.Log("Bounce: blocked by wall while dragging");
         }
         else
         {
+            SaveState(currentBox, startPosBox); // Save the state before moving the box
             yield return MoveBoth(startPosPlayer, endPos, gridMoveDuration);
-            Debug.Log("Dragged grid step in direction: " + direction);
         }
 
         isGridMoving = false;
@@ -137,22 +184,53 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void ReleaseBox()
     {
+        if (currentBox != null)
+            SaveState(currentBox, currentBox.transform.position);
+
         isDragging = false;
-        Debug.Log("Box released.");
         if (playerComponent)
             playerComponent.enabled = true;
-        if (currentBox != null && GameManager.instance != null)
-            GameManager.instance.CheckPuzzleCompletion(playerTransform, currentBox.transform);
+    
         currentBox = null;
         grabDirection = Vector2.zero;
     }
 
-    private void OnDrawGizmosSelected()
+    public void SaveState(Box box, Vector3? boxPos)
     {
-        if (playerTransform == null)
-            playerTransform = transform;
-        Vector3 detectPoint = playerTransform.position + (Vector3)((lastInputDirection != Vector2.zero ? lastInputDirection : Vector2.up) * detectionDistance);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(detectPoint, detectionRadius);
+        // Save the player's position and the box's position (if applicable)
+        undoStack.Push((playerTransform.position, lastInputDirection, box, boxPos));
+    }
+
+    public void UndoMove()
+    {
+        if (undoStack.Count > 0)
+        {
+            // Pop the last state.
+            var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
+            // Revert player position.
+            playerTransform.position = playerPos;
+            // Update stored facing direction.
+            lastInputDirection = facingDirection;
+            // Update the player flip based on the restored facing direction.
+            if (lastInputDirection.x < 0)
+                playerTransform.localScale = new Vector3(-1, 1, 1);
+            else if (lastInputDirection.x > 0)
+                playerTransform.localScale = new Vector3(1, 1, 1);
+        
+            // Revert box position if a box and position were stored.
+            if (box != null && boxPos.HasValue)
+            {
+                box.transform.position = boxPos.Value;
+            }
+        }
+        else
+        {
+            Debug.Log("No more states to undo.");
+        }
+    }
+
+    private void ResetLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
