@@ -14,6 +14,6 @@ public class UI_InGame : MonoBehaviour
 
     private void Start()
     {
-        fadeEffect.ScreenFadeEffect(0, 1);
+        fadeEffect.ScreenFade(0, 1);
     }
 }

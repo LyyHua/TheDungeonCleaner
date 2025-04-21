@@ -15,7 +15,7 @@ public class UI_Credits : MonoBehaviour
     private void Awake()
     {
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
-        fadeEffect.ScreenFadeEffect(0, 1);
+        fadeEffect.ScreenFade(0, 1);
     }
 
     private void Update()
@@ -36,7 +36,7 @@ public class UI_Credits : MonoBehaviour
         else GoToMainMenu();
     }
     
-    private void GoToMainMenu() => fadeEffect.ScreenFadeEffect(1, 1, SwitchToMenuScene);
+    private void GoToMainMenu() => fadeEffect.ScreenFade(1, 1, SwitchToMenuScene);
 
     private void SwitchToMenuScene()
     {

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7391925584207425953}
   - component: {fileID: 2178439385572050981}
   - component: {fileID: 22483814188161657}
+  - component: {fileID: -9202169902237538016}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -198,6 +199,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grabToggleKey: 101
+  undoKey: 117
+  resetKey: 114
   detectionDistance: 0.6
   detectionRadius: 0.3
   boxLayer:
@@ -208,3 +211,28 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!114 &-9202169902237538016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2943179574419912269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae3ae2918cbbb0c43be95b399c23da84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 5948653396765999421}
+  availableSkins:
+  - {fileID: 5424348670514132440, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: 2229891254195283420, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: 8571027462325331655, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -2988324970441796947, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: 3421245086849777472, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -2419274715696069116, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -1542962388774721918, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -3846989261494495056, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -7673242495530757358, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  - {fileID: -8592424096107761443, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
+  _currentSkinId: 0

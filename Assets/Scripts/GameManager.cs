@@ -5,10 +5,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    // Existing fields...
+    [Header("Level Management")]
+    [SerializeField] private int currentLevelIndex;
 
     private BoxPoint[] boxPoints;
     private PlayerPoint[] playerPoints;
+    private bool levelFinishProcessed = false;
 
     private void Awake()
     {
@@ -16,29 +18,50 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
             Destroy(gameObject);
         }
-
-        boxPoints = FindObjectsByType<BoxPoint>(FindObjectsSortMode.None);
-        playerPoints = FindObjectsByType<PlayerPoint>(FindObjectsSortMode.None);
     }
 
-    private void Start()
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (boxPoints.Length == 0 || playerPoints.Length == 0)
+        // Reset for the new level
+        levelFinishProcessed = false;
+        
+        // Update level data
+        currentLevelIndex = scene.buildIndex;
+        
+        // Find points in the new scene
+        RefreshPointsReferences();
+        
+        // Only cancel and restart if we're in a level scene (not menu or end)
+        if (scene.name.StartsWith("Level_"))
         {
-            Debug.LogWarning("No BoxPoint or PlayerPoint found. Check that they are in the scene and set as triggers.");
+            CancelInvoke(nameof(CheckLevelCompletion));
+            InvokeRepeating(nameof(CheckLevelCompletion), 0.1f, 0.5f);
         }
-        InvokeRepeating(nameof(CheckLevelCompletion), 0.1f, 0.5f);
+    }
+    
+    private void RefreshPointsReferences()
+    {
+        boxPoints = FindObjectsByType<BoxPoint>(FindObjectsSortMode.None);
+        playerPoints = FindObjectsByType<PlayerPoint>(FindObjectsSortMode.None);
+        Debug.Log($"Found {boxPoints.Length} box points and {playerPoints.Length} player points");
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void CheckLevelCompletion()
     {
-        if (AreAllPointsOccupied())
+        if (!levelFinishProcessed && AreAllPointsOccupied())
         {
+            levelFinishProcessed = true;
             Debug.Log("Level complete!");
             LevelFinished();
         }
@@ -46,38 +69,50 @@ public class GameManager : MonoBehaviour
 
     private bool AreAllPointsOccupied()
     {
+        if (boxPoints == null || boxPoints.Length == 0 || 
+            playerPoints == null || playerPoints.Length == 0)
+        {
+            return false;
+        }
+
         foreach (BoxPoint bp in boxPoints)
         {
-            if (!bp.isOccupied) return false;
+            if (bp == null || !bp.isOccupied) return false;
         }
+        
         foreach (PlayerPoint pp in playerPoints)
         {
-            if (!pp.isOccupied) return false;
+            if (pp == null || !pp.isOccupied) return false;
         }
+        
         return true;
     }
 
     private void LoadLevelEnd() => SceneManager.LoadScene("TheEnd");
 
-    public void LevelFinished()
+    private void LoadNextLevel()
     {
-        UI_InGame.instance.fadeEffect.ScreenFadeEffect(1, 1.5f, LoadLevelEnd);
-        CancelInvoke(nameof(CheckLevelCompletion));
+        int nextLevelIndex = currentLevelIndex + 1;
+        SceneManager.LoadScene("Level_" + nextLevelIndex);
     }
 
-    // Add this method if you wish to trigger completion check manually.
-    public void CheckPuzzleCompletion(Transform playerTransform, Transform boxTransform)
+    private void LevelFinished()
     {
-        // You can implement additional checks here if needed,
-        // or simply call LevelFinished if the scene is already correctly set.
-        if (AreAllPointsOccupied())
-        {
-            Debug.Log("Puzzle complete via manual check.");
-            LevelFinished();
-        }
+        CancelInvoke(nameof(CheckLevelCompletion));
+        var fadeEffect = UI_InGame.instance.fadeEffect;
+
+        // Menu and End screen take 2 that's why total scene = all level scene + 2
+        var noMoreLevels = currentLevelIndex + 2 >= SceneManager.sceneCountInBuildSettings;
+
+        if (noMoreLevels)
+            fadeEffect.ScreenFade(1, 1.5f, LoadLevelEnd);
         else
-        {
-            Debug.Log("Puzzle not complete.");
-        }
+            fadeEffect.ScreenFade(1, 1.5f, LoadNextLevel);
+    }
+
+    // This can be called by PlayerPoint when player enters
+    public void TriggerLevelCompletionCheck()
+    {
+        CheckLevelCompletion();
     }
 }

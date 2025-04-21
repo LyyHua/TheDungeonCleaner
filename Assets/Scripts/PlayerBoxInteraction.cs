@@ -44,7 +44,7 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (!isDragging)
+        if (!isDragging && !isGridMoving)
         {
             Vector2 input = Vector2.zero;
             if (Input.GetKey(KeyCode.W)) input.y = 1;
@@ -58,7 +58,7 @@ public class PlayerBoxInteraction : MonoBehaviour
             HighlightGrabbableBox();
         }
 
-        if (Input.GetKeyDown(grabToggleKey))
+        if (Input.GetKeyDown(grabToggleKey) && !isGridMoving)
         {
             if (!isDragging)
                 TryGrabBox();
@@ -66,7 +66,7 @@ public class PlayerBoxInteraction : MonoBehaviour
                 ReleaseBox();
         }
 
-        if (Input.GetKeyDown(undoKey))
+        if (Input.GetKeyDown(undoKey) && !isGridMoving)
         {
             UndoMove();
         }
@@ -76,6 +76,7 @@ public class PlayerBoxInteraction : MonoBehaviour
             ResetLevel();
         }
 
+        // Allow continuous drag movement by holding a key.
         if (isDragging && !isGridMoving)
         {
             Vector2 allowedDir = -grabDirection;
@@ -135,21 +136,37 @@ public class PlayerBoxInteraction : MonoBehaviour
             if (playerComponent)
                 playerComponent.enabled = false;
 
-            SaveState(currentBox, null); // Save the state when grabbing a box
+            SaveState(currentBox, null);
         }
     }
-
+    
     private IEnumerator DragMove(Vector3 direction)
     {
         isGridMoving = true;
         Vector3 startPosPlayer = playerTransform.position;
         Vector3 startPosBox = currentBox.transform.position;
-        Vector3 endPos = startPosPlayer + direction;
+        Vector3 endPosPlayer = startPosPlayer + direction;
+        Vector3 endPosBox = startPosBox + direction;
 
-        RaycastHit2D hitPlayer = Physics2D.Raycast(startPosPlayer, direction, 1f, wallLayer);
-        RaycastHit2D hitBox = Physics2D.Raycast(startPosBox, direction, 1f, wallLayer);
+        // Check for player collisions with walls
+        bool playerBlockedByWall = Physics2D.OverlapCircle(endPosPlayer, 0.1f, wallLayer);
 
-        if (hitPlayer.collider != null || hitBox.collider != null)
+        // Check if the player's path is blocked by another box
+        bool playerBlockedByBox = false;
+        Collider2D[] playerPathColliders = Physics2D.OverlapCircleAll(endPosPlayer, 0.1f, boxLayer);
+        foreach (var col in playerPathColliders)
+        {
+            // If we detect any box other than the one we're dragging
+            if (col.gameObject != currentBox.gameObject)
+            {
+                playerBlockedByBox = true;
+                break;
+            }
+        }
+
+        // Check if the path is blocked
+        bool isBlocked = playerBlockedByWall || playerBlockedByBox;
+        if (isBlocked)
         {
             Vector3 bouncePos = startPosPlayer + direction * bounceDistance;
             yield return MoveBoth(startPosPlayer, bouncePos, gridMoveDuration * 0.33f);
@@ -157,47 +174,49 @@ public class PlayerBoxInteraction : MonoBehaviour
         }
         else
         {
-            SaveState(currentBox, startPosBox); // Save the state before moving the box
-            yield return MoveBoth(startPosPlayer, endPos, gridMoveDuration);
+            // Save state before moving
+            SaveState(currentBox, startPosBox);
+            yield return MoveBoth(startPosPlayer, endPosPlayer, gridMoveDuration);
         }
 
         isGridMoving = false;
     }
 
-    private IEnumerator MoveBoth(Vector3 start, Vector3 end, float duration)
+    private IEnumerator MoveBoth(Vector3 startPlayer, Vector3 endPlayer, float duration)
     {
         float elapsed = 0f;
-        Vector3 boxStart = currentBox.transform.position;
-        Vector3 boxEnd = boxStart + (end - start);
+        Vector3 startBox = currentBox.transform.position;
+        Vector3 endBox = startBox + (endPlayer - startPlayer);
 
         while (elapsed < duration)
         {
             float t = elapsed / duration;
-            playerTransform.position = Vector3.Lerp(start, end, t);
-            currentBox.transform.position = Vector3.Lerp(boxStart, boxEnd, t);
+            playerTransform.position = Vector3.Lerp(startPlayer, endPlayer, t);
+            currentBox.transform.position = Vector3.Lerp(startBox, endBox, t);
             elapsed += Time.deltaTime;
             yield return null;
         }
-        playerTransform.position = end;
-        currentBox.transform.position = boxEnd;
+        
+        playerTransform.position = endPlayer;
+        currentBox.transform.position = endBox;
     }
 
     private void ReleaseBox()
     {
         if (currentBox != null)
+        {
             SaveState(currentBox, currentBox.transform.position);
-
+        }
         isDragging = false;
         if (playerComponent)
             playerComponent.enabled = true;
-    
+
         currentBox = null;
         grabDirection = Vector2.zero;
     }
 
     public void SaveState(Box box, Vector3? boxPos)
     {
-        // Save the player's position and the box's position (if applicable)
         undoStack.Push((playerTransform.position, lastInputDirection, box, boxPos));
     }
 
@@ -205,19 +224,13 @@ public class PlayerBoxInteraction : MonoBehaviour
     {
         if (undoStack.Count > 0)
         {
-            // Pop the last state.
             var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
-            // Revert player position.
             playerTransform.position = playerPos;
-            // Update stored facing direction.
             lastInputDirection = facingDirection;
-            // Update the player flip based on the restored facing direction.
             if (lastInputDirection.x < 0)
                 playerTransform.localScale = new Vector3(-1, 1, 1);
             else if (lastInputDirection.x > 0)
                 playerTransform.localScale = new Vector3(1, 1, 1);
-        
-            // Revert box position if a box and position were stored.
             if (box != null && boxPos.HasValue)
             {
                 box.transform.position = boxPos.Value;

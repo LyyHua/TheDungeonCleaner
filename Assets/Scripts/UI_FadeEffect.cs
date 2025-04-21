@@ -6,7 +6,7 @@ public class UI_FadeEffect : MonoBehaviour
 {
     [SerializeField] private Image fadeImage;
 
-    public void ScreenFadeEffect(float targetAlpha, float duration, System.Action onComplete = null)
+    public void ScreenFade(float targetAlpha, float duration, System.Action onComplete = null)
     {
         StartCoroutine(FadeCoroutine(targetAlpha, duration, onComplete));
     }

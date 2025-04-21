@@ -15,6 +15,12 @@ public class PlayerPoint : MonoBehaviour
                 {
                     isOccupied = true;
                     Debug.Log("Player landed on PlayerPoint.");
+                    
+                    // Trigger completion check when player steps on point
+                    if (GameManager.instance != null)
+                    {
+                        GameManager.instance.TriggerLevelCompletionCheck();
+                    }
                 }
             }
             else if (isOccupied)
