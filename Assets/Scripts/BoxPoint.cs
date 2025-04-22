@@ -4,6 +4,7 @@ public class BoxPoint : MonoBehaviour
 {
     public Color requiredColor = Color.white;
     public bool isOccupied = false;
+    private float centerTolerance = 0.2f;
     
     private void OnTriggerStay2D(Collider2D other)
     {
@@ -12,21 +13,23 @@ public class BoxPoint : MonoBehaviour
             Box box = other.GetComponent<Box>();
             if (box != null && box.boxColor.Equals(requiredColor))
             {
-                Vector2 gridPos = new Vector2(Mathf.Round(transform.position.x), Mathf.Round(transform.position.y));
-                Vector2 boxGridPos = new Vector2(Mathf.Round(other.transform.position.x), Mathf.Round(other.transform.position.y));
+                // Check if box is centered on point using distance
+                float distance = Vector2.Distance(transform.position, other.transform.position);
                 
-                if (gridPos == boxGridPos)
+                if (distance <= centerTolerance)
                 {
                     if (!isOccupied)
                     {
                         isOccupied = true;
-                        Debug.Log("Box landed on BoxPoint at grid position: " + gridPos);
+                        AudioManager.instance.PlaySFX(3);
+                        Debug.Log("Box landed on BoxPoint");
+                        
+                        if (GameManager.instance != null)
+                        {
+                            GameManager.instance.UpdateBoxCount();
+                            GameManager.instance.CheckLevelCompletion();
+                        }
                     }
-                }
-                else if (isOccupied)
-                {
-                    isOccupied = false;
-                    Debug.Log("Box moved off BoxPoint at grid position: " + gridPos);
                 }
             }
         }
@@ -37,13 +40,11 @@ public class BoxPoint : MonoBehaviour
         if (other.CompareTag("Box"))
         {
             Box box = other.GetComponent<Box>();
-            if (box != null && box.boxColor.Equals(requiredColor))
+            if (box != null && box.boxColor.Equals(requiredColor) && isOccupied)
             {
-                if (isOccupied)
-                {
-                    isOccupied = false;
-                    Debug.Log("Box left BoxPoint.");
-                }
+                isOccupied = false;
+                if (GameManager.instance != null)
+                    GameManager.instance.UpdateBoxCount();
             }
         }
     }

@@ -13,8 +13,8 @@ public class PlayerBoxInteraction : MonoBehaviour
     [SerializeField] private float detectionRadius = 0.3f;
     [SerializeField] private LayerMask boxLayer;
 
-    [Header("Grid Movement Settings")]
-    [SerializeField] private float gridMoveDuration = 0.15f;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveDuration = 0.15f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private LayerMask wallLayer;
 
@@ -23,7 +23,7 @@ public class PlayerBoxInteraction : MonoBehaviour
     private bool isDragging = false;
     private Vector2 lastInputDirection = Vector2.right;
     private Vector2 grabDirection = Vector2.zero;
-    private bool isGridMoving = false;
+    private bool isMoving = false;
 
     private Transform playerTransform;
     private Player playerComponent;
@@ -44,7 +44,7 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (!isDragging && !isGridMoving)
+        if (!isDragging && !isMoving)
         {
             Vector2 input = Vector2.zero;
             if (Input.GetKey(KeyCode.W)) input.y = 1;
@@ -58,7 +58,7 @@ public class PlayerBoxInteraction : MonoBehaviour
             HighlightGrabbableBox();
         }
 
-        if (Input.GetKeyDown(grabToggleKey) && !isGridMoving)
+        if (Input.GetKeyDown(grabToggleKey) && !isMoving)
         {
             if (!isDragging)
                 TryGrabBox();
@@ -66,7 +66,7 @@ public class PlayerBoxInteraction : MonoBehaviour
                 ReleaseBox();
         }
 
-        if (Input.GetKeyDown(undoKey) && !isGridMoving)
+        if (Input.GetKeyDown(undoKey) && !isMoving)
         {
             UndoMove();
         }
@@ -77,16 +77,16 @@ public class PlayerBoxInteraction : MonoBehaviour
         }
 
         // Allow continuous drag movement by holding a key.
-        if (isDragging && !isGridMoving)
+        if (isDragging && !isMoving)
         {
             Vector2 allowedDir = -grabDirection;
-            if (allowedDir == Vector2.up && Input.GetKeyDown(KeyCode.W))
+            if (allowedDir == Vector2.up && Input.GetKey(KeyCode.W))
                 StartCoroutine(DragMove(Vector3.up));
-            else if (allowedDir == Vector2.down && Input.GetKeyDown(KeyCode.S))
+            else if (allowedDir == Vector2.down && Input.GetKey(KeyCode.S))
                 StartCoroutine(DragMove(Vector3.down));
-            else if (allowedDir == Vector2.left && Input.GetKeyDown(KeyCode.A))
+            else if (allowedDir == Vector2.left && Input.GetKey(KeyCode.A))
                 StartCoroutine(DragMove(Vector3.left));
-            else if (allowedDir == Vector2.right && Input.GetKeyDown(KeyCode.D))
+            else if (allowedDir == Vector2.right && Input.GetKey(KeyCode.D))
                 StartCoroutine(DragMove(Vector3.right));
         }
     }
@@ -142,11 +142,10 @@ public class PlayerBoxInteraction : MonoBehaviour
     
     private IEnumerator DragMove(Vector3 direction)
     {
-        isGridMoving = true;
+        isMoving = true;
         Vector3 startPosPlayer = playerTransform.position;
         Vector3 startPosBox = currentBox.transform.position;
         Vector3 endPosPlayer = startPosPlayer + direction;
-        Vector3 endPosBox = startPosBox + direction;
 
         // Check for player collisions with walls
         bool playerBlockedByWall = Physics2D.OverlapCircle(endPosPlayer, 0.1f, wallLayer);
@@ -169,17 +168,19 @@ public class PlayerBoxInteraction : MonoBehaviour
         if (isBlocked)
         {
             Vector3 bouncePos = startPosPlayer + direction * bounceDistance;
-            yield return MoveBoth(startPosPlayer, bouncePos, gridMoveDuration * 0.33f);
-            yield return MoveBoth(bouncePos, startPosPlayer, gridMoveDuration * 0.33f);
+            AudioManager.instance.PlaySFX(0);
+            yield return MoveBoth(startPosPlayer, bouncePos, moveDuration * 0.33f);
+            yield return MoveBoth(bouncePos, startPosPlayer, moveDuration * 0.33f);
         }
         else
         {
             // Save state before moving
             SaveState(currentBox, startPosBox);
-            yield return MoveBoth(startPosPlayer, endPosPlayer, gridMoveDuration);
+            AudioManager.instance.PlaySFX(7);
+            yield return MoveBoth(startPosPlayer, endPosPlayer, moveDuration);
         }
 
-        isGridMoving = false;
+        isMoving = false;
     }
 
     private IEnumerator MoveBoth(Vector3 startPlayer, Vector3 endPlayer, float duration)
@@ -203,10 +204,6 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void ReleaseBox()
     {
-        if (currentBox != null)
-        {
-            SaveState(currentBox, currentBox.transform.position);
-        }
         isDragging = false;
         if (playerComponent)
             playerComponent.enabled = true;
@@ -220,10 +217,11 @@ public class PlayerBoxInteraction : MonoBehaviour
         undoStack.Push((playerTransform.position, lastInputDirection, box, boxPos));
     }
 
-    public void UndoMove()
+    private void UndoMove()
     {
         if (undoStack.Count > 0)
         {
+            AudioManager.instance.PlaySFX(8);
             var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
             playerTransform.position = playerPos;
             lastInputDirection = facingDirection;
@@ -236,14 +234,11 @@ public class PlayerBoxInteraction : MonoBehaviour
                 box.transform.position = boxPos.Value;
             }
         }
-        else
-        {
-            Debug.Log("No more states to undo.");
-        }
     }
 
     private void ResetLevel()
     {
+        AudioManager.instance.PlaySFX(9);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

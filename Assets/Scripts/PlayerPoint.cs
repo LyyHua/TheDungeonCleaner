@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerPoint : MonoBehaviour
@@ -14,19 +15,13 @@ public class PlayerPoint : MonoBehaviour
                 if (!isOccupied)
                 {
                     isOccupied = true;
-                    Debug.Log("Player landed on PlayerPoint.");
-                    
-                    // Trigger completion check when player steps on point
+                    AudioManager.instance.PlaySFX(3);
                     if (GameManager.instance != null)
                     {
-                        GameManager.instance.TriggerLevelCompletionCheck();
+                        GameManager.instance.CheckLevelCompletion();
+                        GameManager.instance.UpdatePlayerCount();
                     }
                 }
-            }
-            else if (isOccupied)
-            {
-                isOccupied = false;
-                Debug.Log("Player moved off PlayerPoint.");
             }
         }
     }
@@ -38,7 +33,8 @@ public class PlayerPoint : MonoBehaviour
             if (isOccupied)
             {
                 isOccupied = false;
-                Debug.Log("Player left PlayerPoint.");
+                if (GameManager.instance != null)
+                    GameManager.instance.UpdatePlayerCount();
             }
         }
     }

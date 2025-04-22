@@ -59,10 +59,12 @@ public class Player : MonoBehaviour
 
         if (canMove)
         {
+            AudioManager.instance.PlaySFX(1);
             yield return PerformMove(origPos, origPos + direction, timeToMove);
         }
         else
         {
+            AudioManager.instance.PlaySFX(0);
             yield return PerformBounce(origPos, direction);
         }
         isMoving = false;

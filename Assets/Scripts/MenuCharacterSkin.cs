@@ -1,68 +1,57 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MenuCharacterSkin : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Image imageRenderer;
     [SerializeField] private Sprite[] availableSkins;
-    
-    [SerializeField] 
-    private int _currentSkinId = 0;
-    
-    public int currentSkinId
-    {
-        get => _currentSkinId;
-        set
-        {
-            _currentSkinId = value;
-            ApplySkinVisual(_currentSkinId);
-        }
-    }
+    [SerializeField] private int currentSkinId = 0;
 
     private void OnValidate()
     {
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+        if (imageRenderer == null)
+            imageRenderer = GetComponent<Image>();
             
-        ApplySkinVisual(_currentSkinId);
+        ApplySkinVisual(currentSkinId);
     }
 
     private void Start()
     {
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+        if (imageRenderer == null)
+            imageRenderer = GetComponent<Image>();
 
         if (SkinManager.instance != null)
-            _currentSkinId = SkinManager.instance.GetSkinId();
+            currentSkinId = SkinManager.instance.GetSkinId();
 
-        ApplySkinVisual(_currentSkinId);
+        ApplySkinVisual(currentSkinId);
     }
 
     public void PreviewSkin(int skinIndex)
     {
-        if (skinIndex < 0 || skinIndex >= availableSkins.Length || spriteRenderer == null)
+        if (skinIndex < 0 || skinIndex >= availableSkins.Length || imageRenderer == null)
             return;
 
-        _currentSkinId = skinIndex;
-        spriteRenderer.sprite = availableSkins[skinIndex];
+        currentSkinId = skinIndex;
+        imageRenderer.sprite = availableSkins[skinIndex];
     }
 
     private void ApplySkinVisual(int skinIndex)
     {
-        if (spriteRenderer == null || availableSkins == null || availableSkins.Length == 0)
+        if (imageRenderer == null || availableSkins == null || availableSkins.Length == 0)
             return;
         
         if (skinIndex >= 0 && skinIndex < availableSkins.Length)
         {
-            spriteRenderer.sprite = availableSkins[skinIndex];
+            imageRenderer.sprite = availableSkins[skinIndex];
         }
     }
     
     [ContextMenu("Update Skin Display")]
     public void UpdateSkinDisplay()
     {
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+        if (imageRenderer == null)
+            imageRenderer = GetComponent<Image>();
             
-        ApplySkinVisual(_currentSkinId);
+        ApplySkinVisual(currentSkinId);
     }
 }
