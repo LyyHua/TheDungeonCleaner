@@ -39,7 +39,7 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void Start()
     {
-        SaveState(null, null); // Save the initial state
+        SaveState(null, null);
     }
 
     private void Update()
@@ -75,8 +75,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         {
             ResetLevel();
         }
-
-        // Allow continuous drag movement by holding a key.
+        
         if (isDragging && !isMoving)
         {
             Vector2 allowedDir = -grabDirection;
@@ -119,7 +118,7 @@ public class PlayerBoxInteraction : MonoBehaviour
     {
         if (lastInputDirection == Vector2.zero)
         {
-            Debug.Log("No stored directional key; cannot grab.");
+            AudioManager.instance.PlaySFX(0);
             return;
         }
 
@@ -127,6 +126,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
         if (hit != null && hit.CompareTag("Box"))
         {
+            AudioManager.instance.PlaySFX(10);
             currentBox = hit.GetComponent<Box>();
             grabDirection = lastInputDirection.normalized;
             isDragging = true;
@@ -135,8 +135,6 @@ public class PlayerBoxInteraction : MonoBehaviour
 
             if (playerComponent)
                 playerComponent.enabled = false;
-
-            SaveState(currentBox, null);
         }
     }
     
@@ -146,24 +144,20 @@ public class PlayerBoxInteraction : MonoBehaviour
         Vector3 startPosPlayer = playerTransform.position;
         Vector3 startPosBox = currentBox.transform.position;
         Vector3 endPosPlayer = startPosPlayer + direction;
-
-        // Check for player collisions with walls
+        
         bool playerBlockedByWall = Physics2D.OverlapCircle(endPosPlayer, 0.1f, wallLayer);
-
-        // Check if the player's path is blocked by another box
+        
         bool playerBlockedByBox = false;
         Collider2D[] playerPathColliders = Physics2D.OverlapCircleAll(endPosPlayer, 0.1f, boxLayer);
         foreach (var col in playerPathColliders)
         {
-            // If we detect any box other than the one we're dragging
             if (col.gameObject != currentBox.gameObject)
             {
                 playerBlockedByBox = true;
                 break;
             }
         }
-
-        // Check if the path is blocked
+        
         bool isBlocked = playerBlockedByWall || playerBlockedByBox;
         if (isBlocked)
         {
@@ -174,7 +168,6 @@ public class PlayerBoxInteraction : MonoBehaviour
         }
         else
         {
-            // Save state before moving
             SaveState(currentBox, startPosBox);
             AudioManager.instance.PlaySFX(7);
             yield return MoveBoth(startPosPlayer, endPosPlayer, moveDuration);
@@ -204,9 +197,14 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void ReleaseBox()
     {
+        AudioManager.instance.PlaySFX(11);
         isDragging = false;
+        
         if (playerComponent)
             playerComponent.enabled = true;
+
+        highlightedBox = currentBox;
+        highlightedBox.SetOutlineColor(true);
 
         currentBox = null;
         grabDirection = Vector2.zero;
@@ -240,5 +238,19 @@ public class PlayerBoxInteraction : MonoBehaviour
     {
         AudioManager.instance.PlaySFX(9);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    
+    public void ResetState()
+    {
+        StopAllCoroutines();
+        isDragging = false;
+        isMoving = false;
+        currentBox = null;
+        highlightedBox = null;
+        
+        if (playerComponent != null)
+            playerComponent.enabled = true;
+
+        enabled = true;
     }
 }

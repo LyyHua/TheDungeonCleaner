@@ -6396,14 +6396,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 22483814188161657, guid: 9afe7d03bcc29bb4eb79865f89cc707c, type: 3}
-      propertyPath: undoKey
-      value: 114
-      objectReference: {fileID: 0}
-    - target: {fileID: 22483814188161657, guid: 9afe7d03bcc29bb4eb79865f89cc707c, type: 3}
-      propertyPath: resetKey
-      value: 98
-      objectReference: {fileID: 0}
     - target: {fileID: 2943179574419912269, guid: 9afe7d03bcc29bb4eb79865f89cc707c, type: 3}
       propertyPath: m_Name
       value: Player
@@ -7127,6 +7119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelTimer: 0
+  maxLevelTime: 60
   currentLevelIndex: 0
 --- !u!1001 &1458968633
 PrefabInstance:

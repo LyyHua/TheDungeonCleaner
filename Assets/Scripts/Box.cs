@@ -5,20 +5,14 @@ public class Box : MonoBehaviour
     public Color boxColor = Color.white;
 
     [Header("Sprites")]
-    [SerializeField] private Sprite blackOutlineSprite; // Sprite with black outline
-    [SerializeField] private Sprite whiteOutlineSprite; // Sprite with white outline
+    [SerializeField] private Sprite blackOutlineSprite;
+    [SerializeField] private Sprite whiteOutlineSprite;
 
     private SpriteRenderer spriteRenderer;
 
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("SpriteRenderer not found on Box!");
-        }
-
-        // Set the default sprite to black outline
         spriteRenderer.sprite = blackOutlineSprite;
     }
 

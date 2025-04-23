@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -11,16 +12,28 @@ public class Player : MonoBehaviour
     [Header("Collision")]
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private LayerMask boxCollisionLayer;
+    
+    [Header("Skin Settings")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Sprite[] availableSkins;
 
     private bool isMoving;
     private Vector3 origPos;
     private float xInput;
 
-    private PlayerBoxInteraction playerBoxInteraction; // Reference to PlayerBoxInteraction
+    private PlayerBoxInteraction playerBoxInteraction;
 
     private void Awake()
     {
         playerBoxInteraction = GetComponent<PlayerBoxInteraction>();
+        
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    private void Start()
+    {
+        ApplySkin();
     }
 
     private void Update()
@@ -29,6 +42,17 @@ public class Player : MonoBehaviour
 
         HandleInput();
         HandleFlip();
+    }
+    
+    private void ApplySkin()
+    {
+        if (SkinManager.instance == null || spriteRenderer == null || availableSkins == null || availableSkins.Length == 0)
+            return;
+
+        int skinId = SkinManager.instance.GetSkinId();
+
+        if (skinId >= 0 && skinId < availableSkins.Length)
+            spriteRenderer.sprite = availableSkins[skinId];
     }
 
     private void HandleInput()
@@ -49,7 +73,6 @@ public class Player : MonoBehaviour
     {
         isMoving = true;
         origPos = transform.position;
-        // Record the state before moving.
         playerBoxInteraction.SaveState(null, null);
 
         RaycastHit2D hitWall = Physics2D.Raycast(transform.position, direction, 1f, wallLayer);
@@ -97,5 +120,12 @@ public class Player : MonoBehaviour
             transform.localScale = new Vector3(-1, 1, 1);
         else if (xInput > 0)
             transform.localScale = new Vector3(1, 1, 1);
+    }
+    
+    public void ResetState()
+    {
+        StopAllCoroutines();
+        isMoving = false;
+        enabled = true;
     }
 }

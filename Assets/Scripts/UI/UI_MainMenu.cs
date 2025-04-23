@@ -4,11 +4,11 @@ using UnityEngine.SceneManagement;
 public class UI_MainMenu : MonoBehaviour
 {
     private UI_FadeEffect fadeEffect;
-    public string firstLevelName;
     
     [SerializeField] private GameObject[] uiElements;
-
     [SerializeField] private GameObject continueButton;
+    
+    private static bool isContinueMode;
     
     private void Awake()
     {

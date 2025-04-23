@@ -83,13 +83,11 @@ public class UI_SkinSelection : MonoBehaviour
     {
         bankText.text = "Bank: " + MoneyInBank();
         
-        // Update UI preview sprite
         if (previewImageRenderer != null && currentIndex >= 0 && currentIndex < skinSprites.Length)
         {
             previewImageRenderer.sprite = skinSprites[currentIndex];
         }
-
-        // Update character model
+        
         if (menuCharacter != null)
         {
             var characterSkin = menuCharacter.GetComponent<MenuCharacterSkin>();

@@ -14,21 +14,19 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int currentLevelIndex;
     private int nextLevelIndex;
     
-    private Dictionary<int, float> levelMaxTimes = new Dictionary<int, float>()
+    private Dictionary<int, float> levelMaxTimes = new()
     {
-        {1, 120f},  // Level 1: 120 seconds (2 minute)
-        {2, 150f},  // Level 2: 150 seconds (2.5 minutes)
-        {3, 300f}, // Level 3: 300 seconds (5 minutes)
-        // Add more levels as needed
+        {1, 120f},
+        {2, 150f},
+        {3, 300f},
     };
     
     [Header("Rewards")]
-    private Dictionary<int, int> levelRewards = new Dictionary<int, int>()
+    private Dictionary<int, int> levelRewards = new()
     {
-        {1, 10},  // Level 1 gives 10 coins
-        {2, 15},  // Level 2 gives 15 coins
-        {3, 20},  // Level 3 gives 20 coins
-        // Add more levels as needed
+        {1, 10},
+        {2, 15},
+        {3, 20},
     };
 
     private BoxPoint[] boxPoints;
@@ -40,11 +38,47 @@ public class GameManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+    
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Reset everything since there's a bug and this is the only way i can deal with it
+        Time.timeScale = 1;
+        Input.ResetInputAxes();
+        
+        ResetPlayerStates();
+    }
+
+    private void ResetPlayerStates()
+    {
+        // Reset Player and also if you were wondering Player[] for future local co op function so yeah i'm not dumb
+        Player[] players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            Debug.Log("Resetting player: " + player.gameObject.name);
+            player.ResetState();
+        }
+
+        // Reset PlayerBoxInteraction
+        PlayerBoxInteraction[] interactions = FindObjectsByType<PlayerBoxInteraction>(FindObjectsSortMode.None);
+        foreach (PlayerBoxInteraction interaction in interactions)
+        {
+            Debug.Log("Resetting PlayerBoxInteraction: " + interaction.gameObject.name);
+            interaction.ResetState();
+        }
+        
+        StopAllCoroutines();
     }
 
     private void Start()
@@ -81,8 +115,7 @@ public class GameManager : MonoBehaviour
             
             if (inGameUI != null)
                 inGameUI.UpdateTimerUI(remainingTime);
-                
-            // Check for time out
+            
             if (remainingTime <= 0f)
             {
                 TimeOut();
@@ -122,7 +155,6 @@ public class GameManager : MonoBehaviour
     private void TimeOut()
     {
         CancelInvoke(nameof(CheckLevelCompletion));
-        Debug.Log("Time's up! Returning to main menu");
         inGameUI.fadeEffect.ScreenFade(1, 1.5f, ReturnToMainMenu);
     }
 
@@ -131,7 +163,6 @@ public class GameManager : MonoBehaviour
         if (!levelFinishProcessed && AreAllPointsOccupied())
         {
             levelFinishProcessed = true;
-            Debug.Log("Level complete!");
             LevelFinished();
         }
     }
@@ -159,16 +190,15 @@ public class GameManager : MonoBehaviour
     
     private void LevelFinished()
     {
+        AddLevelReward();
         SaveLevelProgression();
         SaveBestTime();
-        AddLevelReward();
         LoadNextScene();
     }
 
     private void SaveBestTime()
     {
         float lastTime = PlayerPrefs.GetFloat("Level" + currentLevelIndex + "BestTime", 999);
-        
         if (levelTimer < lastTime)
             PlayerPrefs.SetFloat("Level" + currentLevelIndex + "BestTime", levelTimer);
     }
@@ -176,7 +206,6 @@ public class GameManager : MonoBehaviour
     private void SaveLevelProgression()
     {
         PlayerPrefs.SetInt("Level" + nextLevelIndex + "Unlocked", 1);
-
         if (!NoMoreLevels())
             PlayerPrefs.SetInt("ContinueLevelNumber", nextLevelIndex);
     }
@@ -184,24 +213,24 @@ public class GameManager : MonoBehaviour
     private void AddLevelReward()
     {
         int currentMoney = PlayerPrefs.GetInt("MoneyInBank", 0);
-        int reward = 5; // Default reward
-    
-        if (levelRewards.ContainsKey(currentLevelIndex))
-            reward = levelRewards[currentLevelIndex];
+        int reward = 5;
         
-        // If player completes the level faster than previous best, add a time bonus
         float bestTime = PlayerPrefs.GetFloat("Level" + currentLevelIndex + "BestTime", 999);
-        if (levelTimer < bestTime)
+
+        if (Mathf.Approximately(bestTime, 999))
         {
-            reward += 5; // Bonus for beating your best time
+            if (levelRewards.ContainsKey(currentLevelIndex))
+                reward = levelRewards[currentLevelIndex];
+            else
+                reward = 5;
         }
-    
+        else
+            reward = 5;
+        
         PlayerPrefs.SetInt("MoneyInBank", currentMoney + reward);
         PlayerPrefs.Save();
-    
-        Debug.Log($"Added {reward} coins. Total: {currentMoney + reward}");
     }
-
+    
     private void LoadLevelEnd() => SceneManager.LoadScene("TheEnd");
 
     private void LoadNextLevel()

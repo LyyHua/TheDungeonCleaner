@@ -5,8 +5,6 @@ public class SkinManager : MonoBehaviour
 {
     public int choosenSkinId;
     public static SkinManager instance;
-    
-    private const string SKIN_PREFS_KEY = "SelectedSkinID";
 
     private void Awake()
     {
@@ -14,14 +12,7 @@ public class SkinManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            
-            // Load saved skin ID if available
-            if (PlayerPrefs.HasKey(SKIN_PREFS_KEY))
-            {
-                choosenSkinId = PlayerPrefs.GetInt(SKIN_PREFS_KEY);
-            }
-            // Subscribe to scene loaded event to update player skin when scenes change
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            choosenSkinId = PlayerPrefs.GetInt("SelectedSkinID", 0);
         }
         else
         {
@@ -29,26 +20,13 @@ public class SkinManager : MonoBehaviour
         }
     }
     
-    private void OnDestroy()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-    
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // Update player skin when new scene loads
-        UpdatePlayerSkin();
-    }
-    
     public void SetSkinId(int id)
     {
         choosenSkinId = id;
         
-        // Save the selected skin ID
-        PlayerPrefs.SetInt(SKIN_PREFS_KEY, id);
+        PlayerPrefs.SetInt("SelectedSkinID", id);
         PlayerPrefs.Save();
         
-        // Update the player skin immediately
         UpdatePlayerSkin();
     }
     
