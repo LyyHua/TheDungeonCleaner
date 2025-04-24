@@ -8,44 +8,31 @@ public class BoxPoint : MonoBehaviour
     
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (other.CompareTag("Box"))
-        {
-            Box box = other.GetComponent<Box>();
-            if (box != null && box.boxColor.Equals(requiredColor))
-            {
-                // Check if box is centered on point using distance
-                float distance = Vector2.Distance(transform.position, other.transform.position);
-                
-                if (distance <= centerTolerance)
-                {
-                    if (!isOccupied)
-                    {
-                        isOccupied = true;
-                        AudioManager.instance.PlaySFX(3);
-                        Debug.Log("Box landed on BoxPoint");
+        if (!other.CompareTag("Box")) return;
+        
+        Box box = other.GetComponent<Box>();
+        if (box == null || !box.boxColor.Equals(requiredColor)) return;
+        
+        float distance = Vector2.Distance(transform.position, other.transform.position);
+        if (!(distance <= centerTolerance)) return;
+        if (isOccupied) return;
+        
+        isOccupied = true;
+        AudioManager.instance.PlaySFX(3);
                         
-                        if (GameManager.instance != null)
-                        {
-                            GameManager.instance.UpdateBoxCount();
-                            GameManager.instance.CheckLevelCompletion();
-                        }
-                    }
-                }
-            }
-        }
+        GameManager.instance.UpdateBoxCount();
+        GameManager.instance.CheckLevelCompletion();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Box"))
-        {
-            Box box = other.GetComponent<Box>();
-            if (box != null && box.boxColor.Equals(requiredColor) && isOccupied)
-            {
-                isOccupied = false;
-                if (GameManager.instance != null)
-                    GameManager.instance.UpdateBoxCount();
-            }
-        }
+        if (!other.CompareTag("Box")) return;
+        
+        Box box = other.GetComponent<Box>();
+        if (box == null || !box.boxColor.Equals(requiredColor) || !isOccupied) return;
+        
+        isOccupied = false;
+        if (GameManager.instance != null)
+            GameManager.instance.UpdateBoxCount();
     }
 }

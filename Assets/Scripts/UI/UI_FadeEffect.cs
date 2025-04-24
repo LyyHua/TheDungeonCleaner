@@ -5,6 +5,12 @@ using UnityEngine.UI;
 public class UI_FadeEffect : MonoBehaviour
 {
     [SerializeField] private Image fadeImage;
+    
+    private void Start()
+    {
+        if (fadeImage != null)
+            fadeImage.color = new Color(fadeImage.color.r, fadeImage.color.g, fadeImage.color.b, 1f);
+    }
 
     public void ScreenFade(float targetAlpha, float duration, System.Action onComplete = null)
     {
@@ -15,7 +21,6 @@ public class UI_FadeEffect : MonoBehaviour
     {
         float time = 0;
         var currentColor = fadeImage.color;
-
         var startAlpha = currentColor.a;
 
         while (time < duration)

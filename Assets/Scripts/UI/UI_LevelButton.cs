@@ -34,6 +34,6 @@ public class UI_LevelButton : MonoBehaviour
         
         int minutes = Mathf.FloorToInt(timerValue / 60f);
         int seconds = Mathf.FloorToInt(timerValue % 60f);
-        return string.Format("Best Time: {0:00}:{1:00}", minutes, seconds);
+        return $"Best Time: {minutes:00}:{seconds:00}";
     }
 }

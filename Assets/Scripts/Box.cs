@@ -4,9 +4,10 @@ public class Box : MonoBehaviour
 {
     public Color boxColor = Color.white;
 
-    [Header("Sprites")]
+    [Header("Box Visuals")]
     [SerializeField] private Sprite blackOutlineSprite;
     [SerializeField] private Sprite whiteOutlineSprite;
+    [SerializeField] private ParticleSystem dustFx;
 
     private SpriteRenderer spriteRenderer;
 
@@ -16,11 +17,7 @@ public class Box : MonoBehaviour
         spriteRenderer.sprite = blackOutlineSprite;
     }
 
-    public void SetOutlineColor(bool isWhite)
-    {
-        if (spriteRenderer == null) return;
-
-        // Switch between black and white outline sprites
-        spriteRenderer.sprite = isWhite ? whiteOutlineSprite : blackOutlineSprite;
-    }
+    public void SetOutlineColor(bool isWhite) => spriteRenderer.sprite = isWhite ? whiteOutlineSprite : blackOutlineSprite;
+    
+    public void PlayDustEffect() => dustFx.Play();
 }

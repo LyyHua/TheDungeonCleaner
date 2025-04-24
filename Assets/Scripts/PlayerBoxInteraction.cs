@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -95,19 +96,17 @@ public class PlayerBoxInteraction : MonoBehaviour
         Vector3 detectPoint = playerTransform.position + (Vector3)(lastInputDirection.normalized * detectionDistance);
         Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
 
-        if (hit != null && hit.CompareTag("Box"))
+        if (hit && hit.CompareTag("Box"))
         {
             Box box = hit.GetComponent<Box>();
-            if (box != null && box != highlightedBox)
-            {
-                if (highlightedBox != null)
-                    highlightedBox.SetOutlineColor(false);
+            if (!box || box == highlightedBox) return;
+            if (highlightedBox)
+                highlightedBox.SetOutlineColor(false);
 
-                highlightedBox = box;
-                highlightedBox.SetOutlineColor(true);
-            }
+            highlightedBox = box;
+            highlightedBox.SetOutlineColor(true);
         }
-        else if (highlightedBox != null)
+        else if (highlightedBox)
         {
             highlightedBox.SetOutlineColor(false);
             highlightedBox = null;
@@ -124,18 +123,16 @@ public class PlayerBoxInteraction : MonoBehaviour
 
         Vector3 detectPoint = playerTransform.position + (Vector3)(lastInputDirection.normalized * detectionDistance);
         Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
-        if (hit != null && hit.CompareTag("Box"))
-        {
-            AudioManager.instance.PlaySFX(10);
-            currentBox = hit.GetComponent<Box>();
-            grabDirection = lastInputDirection.normalized;
-            isDragging = true;
+        if (!hit || !hit.CompareTag("Box")) return;
+        AudioManager.instance.PlaySFX(10);
+        currentBox = hit.GetComponent<Box>();
+        grabDirection = lastInputDirection.normalized;
+        isDragging = true;
 
-            currentBox.SetOutlineColor(false);
+        currentBox.SetOutlineColor(false);
 
-            if (playerComponent)
-                playerComponent.enabled = false;
-        }
+        if (playerComponent)
+            playerComponent.enabled = false;
     }
     
     private IEnumerator DragMove(Vector3 direction)
@@ -146,18 +143,10 @@ public class PlayerBoxInteraction : MonoBehaviour
         Vector3 endPosPlayer = startPosPlayer + direction;
         
         bool playerBlockedByWall = Physics2D.OverlapCircle(endPosPlayer, 0.1f, wallLayer);
-        
-        bool playerBlockedByBox = false;
+
         Collider2D[] playerPathColliders = Physics2D.OverlapCircleAll(endPosPlayer, 0.1f, boxLayer);
-        foreach (var col in playerPathColliders)
-        {
-            if (col.gameObject != currentBox.gameObject)
-            {
-                playerBlockedByBox = true;
-                break;
-            }
-        }
-        
+        bool playerBlockedByBox = playerPathColliders.Any(col => col.gameObject != currentBox.gameObject);
+
         bool isBlocked = playerBlockedByWall || playerBlockedByBox;
         if (isBlocked)
         {
@@ -181,6 +170,9 @@ public class PlayerBoxInteraction : MonoBehaviour
         float elapsed = 0f;
         Vector3 startBox = currentBox.transform.position;
         Vector3 endBox = startBox + (endPlayer - startPlayer);
+        
+        playerComponent.PlayDustEffect();
+        currentBox.PlayDustEffect();
 
         while (elapsed < duration)
         {
@@ -217,20 +209,36 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void UndoMove()
     {
-        if (undoStack.Count > 0)
+        if (undoStack.Count <= 0) 
+            return;
+        
+        AudioManager.instance.PlaySFX(8);
+        
+        if (isDragging)
         {
-            AudioManager.instance.PlaySFX(8);
-            var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
-            playerTransform.position = playerPos;
-            lastInputDirection = facingDirection;
-            if (lastInputDirection.x < 0)
-                playerTransform.localScale = new Vector3(-1, 1, 1);
-            else if (lastInputDirection.x > 0)
-                playerTransform.localScale = new Vector3(1, 1, 1);
-            if (box != null && boxPos.HasValue)
+            isDragging = false;
+            if (currentBox != null)
             {
-                box.transform.position = boxPos.Value;
+                // Optionally, play a sound or set outline color here if needed.
+                currentBox.SetOutlineColor(true);
             }
+            currentBox = null;
+            grabDirection = Vector2.zero;
+            playerComponent.enabled = true;
+        }
+        
+        var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
+        playerTransform.position = playerPos;
+        lastInputDirection = facingDirection;
+        
+        if (lastInputDirection.x < 0)
+            playerTransform.localScale = new Vector3(-1, 1, 1);
+        else if (lastInputDirection.x > 0)
+            playerTransform.localScale = new Vector3(1, 1, 1);
+        
+        if (box && boxPos.HasValue)
+        {
+            box.transform.position = boxPos.Value;
         }
     }
 

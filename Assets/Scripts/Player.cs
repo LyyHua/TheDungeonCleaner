@@ -13,9 +13,10 @@ public class Player : MonoBehaviour
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private LayerMask boxCollisionLayer;
     
-    [Header("Skin Settings")]
+    [Header("Player Visuals")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Sprite[] availableSkins;
+    [SerializeField] private ParticleSystem dustFx;
 
     private bool isMoving;
     private Vector3 origPos;
@@ -83,6 +84,7 @@ public class Player : MonoBehaviour
         if (canMove)
         {
             AudioManager.instance.PlaySFX(1);
+            dustFx.Play();
             yield return PerformMove(origPos, origPos + direction, timeToMove);
         }
         else
@@ -128,4 +130,6 @@ public class Player : MonoBehaviour
         isMoving = false;
         enabled = true;
     }
+    
+    public void PlayDustEffect() => dustFx.Play();
 }

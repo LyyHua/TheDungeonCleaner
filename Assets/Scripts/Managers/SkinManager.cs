@@ -36,16 +36,8 @@ public class SkinManager : MonoBehaviour
     {
         MenuCharacterSkin[] skinControllers = FindObjectsByType<MenuCharacterSkin>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         
-        if (skinControllers.Length == 0)
-        {
-            Debug.Log("No MenuCharacterSkin found in scene");
-            return;
-        }
+        if (skinControllers.Length == 0) return;
         
-        foreach (var controller in skinControllers)
-        {
-            controller.PreviewSkin(choosenSkinId);
-            Debug.Log($"Updated skin to ID {choosenSkinId} on {controller.gameObject.name}");
-        }
+        foreach (var controller in skinControllers) controller.PreviewSkin(choosenSkinId);
     }
 }

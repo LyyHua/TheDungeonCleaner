@@ -115,7 +115,6 @@ public class UI_SkinSelection : MonoBehaviour
         if (HaveEnoughMoney(skins[index].skinPrice) == false)
         {
             AudioManager.instance.PlaySFX(0);
-            Debug.Log("Not enough money");
             return;
         }
         
@@ -123,6 +122,7 @@ public class UI_SkinSelection : MonoBehaviour
         string skinName = skins[currentIndex].skinName;
         skins[currentIndex].unlocked = true;
         
+        SkinManager.instance.SetSkinId(index);
         PlayerPrefs.SetInt(skinName + "Unlocked", 1);
     }
 

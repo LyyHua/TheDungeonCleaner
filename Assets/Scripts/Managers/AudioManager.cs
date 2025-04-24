@@ -57,5 +57,6 @@ public class AudioManager : MonoBehaviour
         sfx[sfxToPlay].Play();
     }
     
+    // Not use but left here for future reference
     public void StopSFX(int sfxToStop) => sfx[sfxToStop].Stop();
 }

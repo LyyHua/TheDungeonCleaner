@@ -41,9 +41,7 @@ public class MenuCharacterSkin : MonoBehaviour
             return;
         
         if (skinIndex >= 0 && skinIndex < availableSkins.Length)
-        {
             imageRenderer.sprite = availableSkins[skinIndex];
-        }
     }
     
     [ContextMenu("Update Skin Display")]

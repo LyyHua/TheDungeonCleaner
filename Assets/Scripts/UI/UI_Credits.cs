@@ -38,8 +38,5 @@ public class UI_Credits : MonoBehaviour
     
     private void GoToMainMenu() => fadeEffect.ScreenFade(1, 1, SwitchToMenuScene);
 
-    private void SwitchToMenuScene()
-    {
-        SceneManager.LoadScene(mainMenuSceneName);
-    }
+    private void SwitchToMenuScene() => SceneManager.LoadScene(mainMenuSceneName);
 }

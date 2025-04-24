@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
         {1, 120f},
         {2, 150f},
         {3, 300f},
+        {4, 360f},
     };
     
     [Header("Rewards")]
@@ -27,6 +28,7 @@ public class GameManager : MonoBehaviour
         {1, 10},
         {2, 15},
         {3, 20},
+        {4, 30},
     };
 
     private BoxPoint[] boxPoints;
@@ -62,11 +64,10 @@ public class GameManager : MonoBehaviour
 
     private void ResetPlayerStates()
     {
-        // Reset Player and also if you were wondering Player[] for future local co op function so yeah i'm not dumb
+        // Reset Player and also if you were wondering why Player[]. It is for future local co op function so yeah i'm not dumb
         Player[] players = FindObjectsByType<Player>(FindObjectsSortMode.None);
         foreach (var player in players)
         {
-            Debug.Log("Resetting player: " + player.gameObject.name);
             player.ResetState();
         }
 
@@ -74,7 +75,6 @@ public class GameManager : MonoBehaviour
         PlayerBoxInteraction[] interactions = FindObjectsByType<PlayerBoxInteraction>(FindObjectsSortMode.None);
         foreach (PlayerBoxInteraction interaction in interactions)
         {
-            Debug.Log("Resetting PlayerBoxInteraction: " + interaction.gameObject.name);
             interaction.ResetState();
         }
         

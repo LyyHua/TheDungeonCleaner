@@ -8,34 +8,21 @@ public class PlayerPoint : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (Vector2.Distance(transform.position, other.transform.position) <= tolerance)
-            {
-                if (!isOccupied)
-                {
-                    isOccupied = true;
-                    AudioManager.instance.PlaySFX(3);
-                    if (GameManager.instance != null)
-                    {
-                        GameManager.instance.CheckLevelCompletion();
-                        GameManager.instance.UpdatePlayerCount();
-                    }
-                }
-            }
-        }
+        if (!other.CompareTag("Player")) return;
+        if (!(Vector2.Distance(transform.position, other.transform.position) <= tolerance)) return;
+        if (isOccupied) return;
+        isOccupied = true;
+        AudioManager.instance.PlaySFX(3);
+        GameManager.instance.CheckLevelCompletion();
+        GameManager.instance.UpdatePlayerCount();
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            if (isOccupied)
-            {
-                isOccupied = false;
-                if (GameManager.instance != null)
-                    GameManager.instance.UpdatePlayerCount();
-            }
-        }
+        if (!other.CompareTag("Player")) return;
+        if (!isOccupied) return;
+        isOccupied = false;
+        if (GameManager.instance != null)
+            GameManager.instance.UpdatePlayerCount();
     }
 }
