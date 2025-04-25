@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class PlayerBoxInteraction : MonoBehaviour
 {
     [Header("Interaction Settings")]
-    [SerializeField] private KeyCode grabToggleKey = KeyCode.E;
+    [SerializeField] private KeyCode grabToggleKey = KeyCode.H;
     [SerializeField] private KeyCode undoKey = KeyCode.U;
     [SerializeField] private KeyCode resetKey = KeyCode.R;
     [SerializeField] private float detectionDistance = 0.6f;
