@@ -18,6 +18,8 @@ public class PlayerBoxInteraction : MonoBehaviour
     [SerializeField] private float moveDuration = 0.15f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private LayerMask wallLayer;
+    [SerializeField] private float grabBufferWindow = 0.135f;
+    [SerializeField] private float releaseBufferWindow = 0.135f;
 
     private Box currentBox;
     private Box highlightedBox;
@@ -25,11 +27,15 @@ public class PlayerBoxInteraction : MonoBehaviour
     private Vector2 lastInputDirection = Vector2.right;
     private Vector2 grabDirection = Vector2.zero;
     private bool isMoving = false;
+    
+    private bool bufferedGrab = false;
+    private float bufferedGrabActivated = 0f;
+    private bool bufferedRelease = false;
+    private float bufferedReleaseActivated = 0f;
 
     private Transform playerTransform;
     private Player playerComponent;
-
-    // Undo stack to track individual movements
+    
     private Stack<(Vector3 playerPos, Vector2 facingDirection, Box box, Vector3? boxPos)> undoStack = new();
 
     private void Awake()
@@ -45,26 +51,58 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(grabToggleKey))
+        {
+            if (isDragging)
+            {
+                if (!isMoving)
+                    ReleaseBox();
+                else
+                {
+                    bufferedRelease = true;
+                    bufferedReleaseActivated = Time.time;
+                }
+            }
+            else
+            {
+                if (!isMoving)
+                    TryGrabBox();
+                else
+                {
+                    bufferedGrab = true;
+                    bufferedGrabActivated = Time.time;
+                }
+            }
+        }
+        
+        if (!isMoving && bufferedGrab && Time.time < bufferedGrabActivated + grabBufferWindow)
+        {
+            TryGrabBox();
+            bufferedGrab = false;
+        }
+        
+        if (!isMoving && bufferedRelease && Time.time < bufferedReleaseActivated + releaseBufferWindow)
+        {
+            ReleaseBox();
+            bufferedRelease = false;
+        }
+
         if (!isDragging && !isMoving)
         {
             Vector2 input = Vector2.zero;
-            if (Input.GetKey(KeyCode.W)) input.y = 1;
-            else if (Input.GetKey(KeyCode.S)) input.y = -1;
-            if (Input.GetKey(KeyCode.D)) input.x = 1;
-            else if (Input.GetKey(KeyCode.A)) input.x = -1;
+            if (Input.GetKey(KeyCode.W))
+                input.y = 1;
+            else if (Input.GetKey(KeyCode.S))
+                input.y = -1;
+            if (Input.GetKey(KeyCode.D))
+                input.x = 1;
+            else if (Input.GetKey(KeyCode.A))
+                input.x = -1;
 
             if (input != Vector2.zero)
                 lastInputDirection = input;
 
             HighlightGrabbableBox();
-        }
-
-        if (Input.GetKeyDown(grabToggleKey) && !isMoving)
-        {
-            if (!isDragging)
-                TryGrabBox();
-            else
-                ReleaseBox();
         }
 
         if (Input.GetKeyDown(undoKey) && !isMoving)
@@ -76,7 +114,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         {
             ResetLevel();
         }
-        
+
         if (isDragging && !isMoving)
         {
             Vector2 allowedDir = -grabDirection;
@@ -99,7 +137,8 @@ public class PlayerBoxInteraction : MonoBehaviour
         if (hit && hit.CompareTag("Box"))
         {
             Box box = hit.GetComponent<Box>();
-            if (!box || box == highlightedBox) return;
+            if (!box || box == highlightedBox)
+                return;
             if (highlightedBox)
                 highlightedBox.SetOutlineColor(false);
 
@@ -123,7 +162,8 @@ public class PlayerBoxInteraction : MonoBehaviour
 
         Vector3 detectPoint = playerTransform.position + (Vector3)(lastInputDirection.normalized * detectionDistance);
         Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
-        if (!hit || !hit.CompareTag("Box")) return;
+        if (!hit || !hit.CompareTag("Box"))
+            return;
         AudioManager.instance.PlaySFX(10);
         currentBox = hit.GetComponent<Box>();
         grabDirection = lastInputDirection.normalized;
@@ -134,14 +174,31 @@ public class PlayerBoxInteraction : MonoBehaviour
         if (playerComponent)
             playerComponent.enabled = false;
     }
-    
+
+    private void ReleaseBox()
+    {
+        AudioManager.instance.PlaySFX(11);
+        isDragging = false;
+
+        if (playerComponent)
+            playerComponent.enabled = true;
+
+        if (currentBox != null)
+        {
+            // Re-enable outline on the box if needed.
+            currentBox.SetOutlineColor(true);
+        }
+        currentBox = null;
+        grabDirection = Vector2.zero;
+    }
+
     private IEnumerator DragMove(Vector3 direction)
     {
         isMoving = true;
         Vector3 startPosPlayer = playerTransform.position;
         Vector3 startPosBox = currentBox.transform.position;
         Vector3 endPosPlayer = startPosPlayer + direction;
-        
+
         bool playerBlockedByWall = Physics2D.OverlapCircle(endPosPlayer, 0.1f, wallLayer);
 
         Collider2D[] playerPathColliders = Physics2D.OverlapCircleAll(endPosPlayer, 0.1f, boxLayer);
@@ -170,7 +227,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         float elapsed = 0f;
         Vector3 startBox = currentBox.transform.position;
         Vector3 endBox = startBox + (endPlayer - startPlayer);
-        
+
         playerComponent.PlayDustEffect();
         currentBox.PlayDustEffect();
 
@@ -182,24 +239,9 @@ public class PlayerBoxInteraction : MonoBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
-        
+
         playerTransform.position = endPlayer;
         currentBox.transform.position = endBox;
-    }
-
-    private void ReleaseBox()
-    {
-        AudioManager.instance.PlaySFX(11);
-        isDragging = false;
-        
-        if (playerComponent)
-            playerComponent.enabled = true;
-
-        highlightedBox = currentBox;
-        highlightedBox.SetOutlineColor(true);
-
-        currentBox = null;
-        grabDirection = Vector2.zero;
     }
 
     public void SaveState(Box box, Vector3? boxPos)
@@ -209,37 +251,34 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private void UndoMove()
     {
-        if (undoStack.Count <= 0) 
+        if (undoStack.Count <= 0)
             return;
-        
+
         AudioManager.instance.PlaySFX(8);
-        
+
         if (isDragging)
         {
             isDragging = false;
             if (currentBox != null)
             {
-                // Optionally, play a sound or set outline color here if needed.
                 currentBox.SetOutlineColor(true);
             }
             currentBox = null;
             grabDirection = Vector2.zero;
             playerComponent.enabled = true;
         }
-        
+
         var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();
         playerTransform.position = playerPos;
         lastInputDirection = facingDirection;
-        
+
         if (lastInputDirection.x < 0)
             playerTransform.localScale = new Vector3(-1, 1, 1);
         else if (lastInputDirection.x > 0)
             playerTransform.localScale = new Vector3(1, 1, 1);
-        
+
         if (box && boxPos.HasValue)
-        {
             box.transform.position = boxPos.Value;
-        }
     }
 
     private void ResetLevel()
@@ -247,7 +286,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         AudioManager.instance.PlaySFX(9);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    
+
     public void ResetState()
     {
         StopAllCoroutines();
@@ -255,13 +294,13 @@ public class PlayerBoxInteraction : MonoBehaviour
         isMoving = false;
         currentBox = null;
         highlightedBox = null;
-        
+
         if (playerComponent != null)
             playerComponent.enabled = true;
 
         enabled = true;
     }
-    
+
     public Vector2 LastInputDirection()
     {
         return lastInputDirection;

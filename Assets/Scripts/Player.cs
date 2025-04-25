@@ -4,10 +4,10 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float timeToMove = 0.15f;
+    [SerializeField] private float timeToMove = 0.135f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private float bounceTime = 0.05f;
-    [SerializeField] private float bufferMoveWindow = 0.075f;
+    [SerializeField] private float bufferMoveWindow = 0.065f;
     private float bufferMoveActivated = -1f;
     private Vector2 bufferedDirection = Vector2.zero;
 
