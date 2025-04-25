@@ -261,4 +261,9 @@ public class PlayerBoxInteraction : MonoBehaviour
 
         enabled = true;
     }
+    
+    public Vector2 LastInputDirection()
+    {
+        return lastInputDirection;
+    }
 }
