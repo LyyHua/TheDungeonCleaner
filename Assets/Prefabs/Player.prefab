@@ -104,9 +104,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60c856a810ea9ff4fa43206bda06905e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeToMove: 0.15
+  timeToMove: 0.135
   bounceDistance: 0.25
   bounceTime: 0.05
+  bufferMoveWindow: 0.0675
   wallLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -211,7 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57c42cb4045a02c46a9d5a3ffbf01b1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grabToggleKey: 101
+  grabToggleKey: 104
   undoKey: 117
   resetKey: 114
   detectionDistance: 0.6
@@ -219,11 +220,13 @@ MonoBehaviour:
   boxLayer:
     serializedVersion: 2
     m_Bits: 256
-  moveDuration: 0.15
+  moveDuration: 0.135
   bounceDistance: 0.25
   wallLayer:
     serializedVersion: 2
     m_Bits: 8
+  grabBufferWindow: 0.135
+  releaseBufferWindow: 0.135
 --- !u!1001 &6736336957247947161
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -16,19 +16,23 @@ public class GameManager : MonoBehaviour
     
     private Dictionary<int, float> levelMaxTimes = new()
     {
-        {1, 120f},
-        {2, 150f},
-        {3, 300f},
-        {4, 360f},
+        {1, 90f},
+        {2, 120f},
+        {3, 240f},
+        {4, 300f},
+        {5, 360f},
+        {6, 420f},
     };
     
     [Header("Rewards")]
     private Dictionary<int, int> levelRewards = new()
     {
-        {1, 10},
-        {2, 15},
-        {3, 20},
-        {4, 30},
+        {1, 5},
+        {2, 10},
+        {3, 15},
+        {4, 20},
+        {5, 30},
+        {6, 40},
     };
 
     private BoxPoint[] boxPoints;

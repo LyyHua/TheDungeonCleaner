@@ -15,7 +15,7 @@ public class PlayerBoxInteraction : MonoBehaviour
     [SerializeField] private LayerMask boxLayer;
 
     [Header("Movement Settings")]
-    [SerializeField] private float moveDuration = 0.15f;
+    [SerializeField] private float moveDuration = 0.135f;
     [SerializeField] private float bounceDistance = 0.25f;
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private float grabBufferWindow = 0.135f;
