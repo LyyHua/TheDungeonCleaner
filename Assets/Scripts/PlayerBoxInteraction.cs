@@ -300,9 +300,9 @@ public class PlayerBoxInteraction : MonoBehaviour
 
         enabled = true;
     }
-
-    public Vector2 LastInputDirection()
+    
+    public void SetMoveDuration(float newDuration)
     {
-        return lastInputDirection;
+        moveDuration = newDuration;
     }
 }

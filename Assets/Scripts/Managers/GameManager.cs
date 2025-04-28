@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,14 +15,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int currentLevelIndex;
     private int nextLevelIndex;
     
+    [Header("Boosters")]
+    public bool freezeTimeActive = false;
+    
     private Dictionary<int, float> levelMaxTimes = new()
     {
         {1, 90f},
         {2, 120f},
-        {3, 240f},
-        {4, 300f},
-        {5, 360f},
-        {6, 420f},
+        {3, 180f},
+        {4, 240f},
+        {5, 300f},
+        {6, 360f},
+        {7, 420f},
     };
     
     [Header("Rewards")]
@@ -33,6 +38,7 @@ public class GameManager : MonoBehaviour
         {4, 20},
         {5, 30},
         {6, 40},
+        {7, 50},
     };
 
     private BoxPoint[] boxPoints;
@@ -112,18 +118,17 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (levelTimer < maxLevelTime)
+        if (!freezeTimeActive && levelTimer < maxLevelTime)
         {
             levelTimer += Time.deltaTime;
-            float remainingTime = maxLevelTime - levelTimer;
-            
-            if (inGameUI != null)
-                inGameUI.UpdateTimerUI(remainingTime);
-            
-            if (remainingTime <= 0f)
-            {
-                TimeOut();
-            }
+        }
+    
+        float remainingTime = maxLevelTime - levelTimer;
+        UI_InGame.instance.UpdateTimerUI(remainingTime);
+    
+        if (remainingTime <= 0f)
+        {
+            TimeOut();
         }
     }
     
@@ -262,5 +267,18 @@ public class GameManager : MonoBehaviour
     {
         // Menu and End screen take 2 that's why total scene = all level scene + 2
         return currentLevelIndex + 2 >= SceneManager.sceneCountInBuildSettings;
+    }
+    
+    public void FreezeTime(float duration)
+    {
+        if (!freezeTimeActive)
+            StartCoroutine(HandleFreezeTime(duration));
+    }
+
+    private IEnumerator HandleFreezeTime(float duration)
+    {
+        freezeTimeActive = true;
+        yield return new WaitForSeconds(duration);
+        freezeTimeActive = false;
     }
 }

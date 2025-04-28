@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -72,5 +72,49 @@ public class UI_InGame : MonoBehaviour
         int minutes = Mathf.FloorToInt(timer / 60f);
         int seconds = Mathf.FloorToInt(timer % 60f);
         timerText.text = $"Remaining time: {minutes:00}:{seconds:00}";
+    }
+    
+    public void OnFreezeTimeButtonPressed()
+    {
+        GameManager.instance.FreezeTime(60f);
+        timerText.color = Color.blue;
+        Invoke(nameof(ResetTimerTextColor), 60f);
+    }
+
+    private void ResetTimerTextColor()
+    {
+        timerText.color = Color.white;
+    }
+
+    public void OnSpeedUpButtonPressed()
+    {
+        StartCoroutine(HandleSpeedUpBooster(60f));
+    }
+
+    private IEnumerator HandleSpeedUpBooster(float duration)
+    {
+        Player[] players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+        foreach (var p in players)
+        {
+            p.SetMovementSpeed(0.1f);
+        }
+
+        PlayerBoxInteraction[] interactions = FindObjectsByType<PlayerBoxInteraction>(FindObjectsSortMode.None);
+        foreach (var interaction in interactions)
+        {
+            interaction.SetMoveDuration(0.1f);
+        }
+
+        yield return new WaitForSeconds(duration);
+        
+        foreach (var p in players)
+        {
+            p.SetMovementSpeed(0.135f);
+        }
+
+        foreach (var interaction in interactions)
+        {
+            interaction.SetMoveDuration(0.135f);
+        }
     }
 }

@@ -158,4 +158,9 @@ public class Player : MonoBehaviour
         if (skinId >= 0 && skinId < availableSkins.Length)
             spriteRenderer.sprite = availableSkins[skinId];
     }
+    
+    public void SetMovementSpeed(float newSpeed)
+    {
+        timeToMove = newSpeed;
+    }
 }
