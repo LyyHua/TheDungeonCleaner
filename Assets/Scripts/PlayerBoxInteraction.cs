@@ -13,6 +13,8 @@ public class PlayerBoxInteraction : MonoBehaviour
     [SerializeField] private float detectionDistance = 0.6f;
     [SerializeField] private float detectionRadius = 0.3f;
     [SerializeField] private LayerMask boxLayer;
+    private Vector2 lastProcessedDragInput = Vector2.zero;
+    private bool hasDragInputChanged = false;
 
     [Header("Movement Settings")]
     [SerializeField] private float moveDuration = 0.135f;
@@ -89,15 +91,19 @@ public class PlayerBoxInteraction : MonoBehaviour
 
         if (!isDragging && !isMoving)
         {
-            Vector2 input = Vector2.zero;
-            if (Input.GetKey(KeyCode.W))
-                input.y = 1;
-            else if (Input.GetKey(KeyCode.S))
-                input.y = -1;
-            if (Input.GetKey(KeyCode.D))
-                input.x = 1;
-            else if (Input.GetKey(KeyCode.A))
-                input.x = -1;
+            // Vector2 input = Vector2.zero;
+            // PC keyboard input
+            // if (Input.GetKey(KeyCode.W))
+            //     input.y = 1;
+            // else if (Input.GetKey(KeyCode.S))
+            //     input.y = -1;
+            // if (Input.GetKey(KeyCode.D))
+            //     input.x = 1;
+            // else if (Input.GetKey(KeyCode.A))
+            //     input.x = -1;
+            
+            // joystick input
+            Vector2 input = playerComponent.lastMovementDirection;
 
             if (input != Vector2.zero)
                 lastInputDirection = input;
@@ -114,18 +120,20 @@ public class PlayerBoxInteraction : MonoBehaviour
         {
             ResetLevel();
         }
-
+        
         if (isDragging && !isMoving)
         {
-            Vector2 allowedDir = -grabDirection;
-            if (allowedDir == Vector2.up && Input.GetKey(KeyCode.W))
-                StartCoroutine(DragMove(Vector3.up));
-            else if (allowedDir == Vector2.down && Input.GetKey(KeyCode.S))
-                StartCoroutine(DragMove(Vector3.down));
-            else if (allowedDir == Vector2.left && Input.GetKey(KeyCode.A))
-                StartCoroutine(DragMove(Vector3.left));
-            else if (allowedDir == Vector2.right && Input.GetKey(KeyCode.D))
-                StartCoroutine(DragMove(Vector3.right));
+            Vector2 direction = playerComponent.GetMovementDirection();
+            
+            if (direction != Vector2.zero)
+            {
+                Vector2 allowedDir = -grabDirection;
+                
+                if (direction == allowedDir)
+                {
+                    StartCoroutine(DragMove(new Vector3(direction.x, direction.y, 0)));
+                }
+            }
         }
     }
 
@@ -164,6 +172,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         Collider2D hit = Physics2D.OverlapCircle(detectPoint, detectionRadius, boxLayer);
         if (!hit || !hit.CompareTag("Box"))
             return;
+        
         AudioManager.instance.PlaySFX(10);
         currentBox = hit.GetComponent<Box>();
         grabDirection = lastInputDirection.normalized;
@@ -172,7 +181,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         currentBox.SetOutlineColor(false);
 
         if (playerComponent)
-            playerComponent.enabled = false;
+            playerComponent.SetDraggingMode(true);
     }
 
     private void ReleaseBox()
@@ -181,13 +190,9 @@ public class PlayerBoxInteraction : MonoBehaviour
         isDragging = false;
 
         if (playerComponent)
-            playerComponent.enabled = true;
-
-        if (currentBox != null)
-        {
-            // Re-enable outline on the box if needed.
-            currentBox.SetOutlineColor(true);
-        }
+            playerComponent.SetDraggingMode(false);
+        
+        currentBox.SetOutlineColor(true);
         currentBox = null;
         grabDirection = Vector2.zero;
     }
@@ -218,7 +223,7 @@ public class PlayerBoxInteraction : MonoBehaviour
             AudioManager.instance.PlaySFX(7);
             yield return MoveBoth(startPosPlayer, endPosPlayer, moveDuration);
         }
-
+        
         isMoving = false;
     }
 

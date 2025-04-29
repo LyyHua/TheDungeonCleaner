@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float bufferMoveWindow = 0.065f;
     private float bufferMoveActivated = -1f;
     private Vector2 bufferedDirection = Vector2.zero;
+    public Vector2 lastMovementDirection = Vector2.right;
+    private bool isDraggingMode = false;
 
     [Header("Collision")]
     [SerializeField] private LayerMask wallLayer;
@@ -23,13 +25,15 @@ public class Player : MonoBehaviour
     private bool isMoving;
     private Vector2 origPos;
     private float xInput;
+    private float yInput;
     private PlayerBoxInteraction playerBoxInteraction;
+    private Joystick joyStick;
 
     private void Awake()
     {
         playerBoxInteraction = GetComponent<PlayerBoxInteraction>();
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        joyStick = FindFirstObjectByType<Joystick>();
     }
 
     private void Start()
@@ -47,27 +51,45 @@ public class Player : MonoBehaviour
         HandleFlip();
     }
 
+    public Vector2 GetMovementDirection()
+    {
+        Vector2 input = Vector2.zero;
+        
+        // Mobile Input
+        input = new Vector2(joyStick.Horizontal, joyStick.Vertical);
+        
+        // PC Input (temporarily disabled for mobile development)
+        /*
+        if (Input.GetKey(KeyCode.W))
+            input = Vector2.up;
+        else if (Input.GetKey(KeyCode.S))
+            input = Vector2.down;
+        else if (Input.GetKey(KeyCode.D))
+            input = Vector2.right;
+        else if (Input.GetKey(KeyCode.A))
+            input = Vector2.left;
+        */
+        
+        // Use a threshold before calculating dominant direction.
+        if (!(Mathf.Abs(input.x) > 0.1f) && !(Mathf.Abs(input.y) > 0.1f)) return Vector2.zero;
+        
+        // Determine dominant direction.
+        if (Mathf.Abs(input.x) >= Mathf.Abs(input.y))
+            return (input.x > 0) ? Vector2.right : Vector2.left;
+        return (input.y > 0) ? Vector2.up : Vector2.down;
+    }
+
     private void HandleInput()
     {
-        if (Input.GetKey(KeyCode.W))
+        Vector2 direction = GetMovementDirection();
+        if (direction == Vector2.zero) return;
+        
+        lastMovementDirection = direction;
+        
+        if (!isDraggingMode)
         {
             bufferMoveActivated = Time.time;
-            StartCoroutine(MovePlayer(Vector2.up));
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            bufferMoveActivated = Time.time;
-            StartCoroutine(MovePlayer(Vector2.left));
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            bufferMoveActivated = Time.time;
-            StartCoroutine(MovePlayer(Vector2.down));
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            bufferMoveActivated = Time.time;
-            StartCoroutine(MovePlayer(Vector2.right));
+            StartCoroutine(MovePlayer(direction));
         }
     }
 
@@ -80,16 +102,13 @@ public class Player : MonoBehaviour
             StartCoroutine(MovePlayer(moveDir));
         }
     }
-
-    // Movement using Vector2 for calculation and converting to Vector3 when updating position.
+    
     private IEnumerator MovePlayer(Vector2 direction)
     {
         isMoving = true;
-        // Convert transform.position to Vector2
         origPos = new Vector2(transform.position.x, transform.position.y);
         playerBoxInteraction.SaveState(null, null);
-
-        // Calculate the target position in 2D then convert back for transform.position (using z from current transform)
+        
         Vector2 targetPos = origPos + direction;
         Vector3 targetPosition = new Vector3(targetPos.x, targetPos.y, transform.position.z);
 
@@ -133,11 +152,31 @@ public class Player : MonoBehaviour
 
     private void HandleFlip()
     {
-        xInput = Input.GetAxisRaw("Horizontal");
-        if (xInput < 0)
-            transform.localScale = new Vector3(-1, 1, 1);
-        else if (xInput > 0)
-            transform.localScale = new Vector3(1, 1, 1);
+        // xInput = Input.GetAxisRaw("Horizontal");
+        // if (xInput < 0)
+        //     transform.localScale = new Vector3(-1, 1, 1);
+        // else if (xInput > 0)
+        //     transform.localScale = new Vector3(1, 1, 1);
+        // Get joystick input instead of keyboard only
+        Vector2 input = joyStick.Direction;
+    
+        // Use the last movement direction if there's no current input
+        if (input.magnitude < 0.1f)
+        {
+            // Flip based on last movement direction
+            if (lastMovementDirection.x < 0)
+                transform.localScale = new Vector3(-1, 1, 1);
+            else if (lastMovementDirection.x > 0)
+                transform.localScale = new Vector3(1, 1, 1);
+        }
+        // Otherwise flip based on current input
+        else if (Mathf.Abs(input.x) > 0.1f)
+        {
+            if (input.x < 0)
+                transform.localScale = new Vector3(-1, 1, 1);
+            else if (input.x > 0)
+                transform.localScale = new Vector3(1, 1, 1);
+        }
     }
 
     public void ResetState()
@@ -162,5 +201,10 @@ public class Player : MonoBehaviour
     public void SetMovementSpeed(float newSpeed)
     {
         timeToMove = newSpeed;
+    }
+    
+    public void SetDraggingMode(bool isDragging)
+    {
+        isDraggingMode = isDragging;
     }
 }
