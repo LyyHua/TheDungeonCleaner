@@ -31,7 +31,7 @@ public class PlayerBoxInteraction : MonoBehaviour
     public bool isDragging = false;
     private Vector2 lastInputDirection = Vector2.right;
     private Vector2 grabDirection = Vector2.zero;
-    private bool isMoving = false;
+    public bool isMoving = false;
     
     private bool bufferedGrab = false;
     private float bufferedGrabActivated = 0f;
@@ -322,5 +322,17 @@ public class PlayerBoxInteraction : MonoBehaviour
     public void SetMoveDuration(float newDuration)
     {
         moveDuration = newDuration;
+    }
+    
+    public void BufferGrabAction()
+    {
+        bufferedGrab = true;
+        bufferedGrabActivated = Time.time;
+    }
+
+    public void BufferReleaseAction()
+    {
+        bufferedRelease = true;
+        bufferedReleaseActivated = Time.time;
     }
 }

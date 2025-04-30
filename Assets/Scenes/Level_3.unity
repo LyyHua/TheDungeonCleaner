@@ -6797,6 +6797,7 @@ MonoBehaviour:
   levelTimer: 0
   maxLevelTime: 60
   currentLevelIndex: 0
+  freezeTimeActive: 0
 --- !u!1001 &1442786166
 PrefabInstance:
   m_ObjectHideFlags: 0

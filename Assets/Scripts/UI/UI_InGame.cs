@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,8 +16,17 @@ public class UI_InGame : MonoBehaviour
 
     [SerializeField] private GameObject pauseUI;
     [SerializeField] private GameObject grabButton;
+    [SerializeField] private Button freezeTimeButton;
+    [SerializeField] private Button speedUpButton;
+    
+    private bool freezeTimeOnCooldown = false;
+    private bool speedUpOnCooldown = false;
+    private float freezeTimeCooldownRemaining = 0f;
+    private float speedUpCooldownRemaining = 0f;
 
     private Image grabButtonImage;
+    private Image freezeTimeImage;
+    private Image speedUpImage;
 
     private bool isPaused;
     private PlayerBoxInteraction playerBoxInteraction;
@@ -29,6 +37,11 @@ public class UI_InGame : MonoBehaviour
         playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
         grabButtonImage = grabButton.GetComponent<Image>();
+        freezeTimeImage = freezeTimeButton.GetComponent<Image>();
+        speedUpImage = speedUpButton.GetComponent<Image>();
+        
+        SetupCooldownOverlay(freezeTimeImage);
+        SetupCooldownOverlay(speedUpImage);
     }
 
     private void Start()
@@ -43,6 +56,51 @@ public class UI_InGame : MonoBehaviour
             PauseButton();
         }
         UpdateGrabButtonState();
+        UpdateCooldowns();
+    }
+    
+    private void SetupCooldownOverlay(Image overlay)
+    {
+        if (overlay != null)
+        {
+            overlay.type = Image.Type.Filled;
+            overlay.fillMethod = Image.FillMethod.Radial360;
+            overlay.fillOrigin = 2;
+            overlay.fillClockwise = false;
+            overlay.fillAmount = 1f;
+            overlay.color = new Color(1f, 1f, 1f, 1f);
+        }
+    }
+    
+    private void UpdateCooldowns()
+    {
+        if (freezeTimeOnCooldown)
+        {
+            freezeTimeCooldownRemaining -= Time.deltaTime;
+            freezeTimeImage.fillAmount = 1 - (freezeTimeCooldownRemaining / 60f);
+
+            if (freezeTimeCooldownRemaining <= 0)
+            {
+                freezeTimeOnCooldown = false;
+                freezeTimeImage.fillAmount = 1f;
+                freezeTimeImage.color = new Color(1f, 1f, 1f, 1f);
+                freezeTimeButton.interactable = true;
+            }
+        }
+        
+        if (speedUpOnCooldown)
+        {
+            speedUpCooldownRemaining -= Time.deltaTime;
+            speedUpImage.fillAmount = 1 - (speedUpCooldownRemaining / 60f);
+
+            if (speedUpCooldownRemaining <= 0)
+            {
+                speedUpOnCooldown = false;
+                speedUpImage.fillAmount = 1f;
+                speedUpImage.color = new Color(1f, 1f, 1f, 1f);
+                speedUpButton.interactable = true;
+            }
+        }
     }
     
     private void UpdateGrabButtonState()
@@ -66,12 +124,23 @@ public class UI_InGame : MonoBehaviour
 
     public void GrabReleaseButton()
     {
-        if (playerBoxInteraction != null)
+        if (playerBoxInteraction.isDragging)
         {
-            if (playerBoxInteraction.isDragging)
+            if (!playerBoxInteraction.isMoving)
                 playerBoxInteraction.ReleaseBox();
             else
+            {
+                playerBoxInteraction.BufferReleaseAction();
+            }
+        }
+        else
+        {
+            if (!playerBoxInteraction.isMoving)
                 playerBoxInteraction.TryGrabBox();
+            else
+            {
+                playerBoxInteraction.BufferGrabAction();
+            }
         }
     }
     
@@ -120,8 +189,14 @@ public class UI_InGame : MonoBehaviour
     public void OnFreezeTimeButtonPressed()
     {
         GameManager.instance.FreezeTime(60f);
-        timerText.color = Color.blue;
+        timerText.color = Color.cyan;
         Invoke(nameof(ResetTimerTextColor), 60f);
+        
+        freezeTimeOnCooldown = true;
+        freezeTimeCooldownRemaining = 60f;
+        freezeTimeButton.interactable = false;
+        freezeTimeImage.color = new Color(1f, 1f, 1f, 1f);
+        freezeTimeImage.fillAmount = 0f;
     }
 
     private void ResetTimerTextColor()
@@ -132,6 +207,12 @@ public class UI_InGame : MonoBehaviour
     public void OnSpeedUpButtonPressed()
     {
         StartCoroutine(HandleSpeedUpBooster(60f));
+        
+        speedUpOnCooldown = true;
+        speedUpCooldownRemaining = 60f;
+        speedUpButton.interactable = false;
+        speedUpImage.color = new Color(1f, 1f, 1f, 1f);
+        speedUpImage.fillAmount = 0f;
     }
 
     private IEnumerator HandleSpeedUpBooster(float duration)

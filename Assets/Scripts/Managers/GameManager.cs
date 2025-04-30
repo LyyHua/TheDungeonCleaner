@@ -26,7 +26,6 @@ public class GameManager : MonoBehaviour
         {4, 240f},
         {5, 300f},
         {6, 360f},
-        {7, 420f},
     };
     
     [Header("Rewards")]
@@ -38,7 +37,6 @@ public class GameManager : MonoBehaviour
         {4, 20},
         {5, 30},
         {6, 40},
-        {7, 50},
     };
 
     private BoxPoint[] boxPoints;
