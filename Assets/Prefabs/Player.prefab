@@ -108,6 +108,7 @@ MonoBehaviour:
   bounceDistance: 0.25
   bounceTime: 0.05
   bufferMoveWindow: 0.0675
+  lastMovementDirection: {x: 1, y: 0}
   wallLayer:
     serializedVersion: 2
     m_Bits: 8

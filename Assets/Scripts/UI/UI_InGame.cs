@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UI_InGame : MonoBehaviour
 {
@@ -11,16 +13,22 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI boxText;
     [SerializeField] private TextMeshProUGUI playerText;
+    [SerializeField] private TextMeshProUGUI grabText;
 
     [SerializeField] private GameObject pauseUI;
+    [SerializeField] private GameObject grabButton;
+
+    private Image grabButtonImage;
 
     private bool isPaused;
+    private PlayerBoxInteraction playerBoxInteraction;
 
     private void Awake()
     {
         instance = this;
-        
+        playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
+        grabButtonImage = grabButton.GetComponent<Image>();
     }
 
     private void Start()
@@ -34,7 +42,42 @@ public class UI_InGame : MonoBehaviour
         {
             PauseButton();
         }
+        UpdateGrabButtonState();
     }
+    
+    private void UpdateGrabButtonState()
+    {
+        if (playerBoxInteraction.isDragging)
+        {
+            grabText.text = "Release";
+            grabButtonImage.color = new Color(1f, 1f, 1f, 1f);
+        }
+        else if (playerBoxInteraction.isBoxHighlighted)
+        {
+            grabText.text = "Grab";
+            grabButtonImage.color = new Color(1f, 1f, 1f, 1f);
+        }
+        else
+        {
+            grabText.text = "Grab";
+            grabButtonImage.color = new Color(1f, 1f, 1f, 0.6f);
+        }
+    }
+
+    public void GrabReleaseButton()
+    {
+        if (playerBoxInteraction != null)
+        {
+            if (playerBoxInteraction.isDragging)
+                playerBoxInteraction.ReleaseBox();
+            else
+                playerBoxInteraction.TryGrabBox();
+        }
+    }
+    
+    public void UndoButton() => playerBoxInteraction.UndoMove();
+    
+    public void ResetLevelButton() => playerBoxInteraction.ResetLevel();
 
     public void PauseButton()
     {

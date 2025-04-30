@@ -107,7 +107,6 @@ public class Player : MonoBehaviour
     {
         isMoving = true;
         origPos = new Vector2(transform.position.x, transform.position.y);
-        playerBoxInteraction.SaveState(null, null);
         
         Vector2 targetPos = origPos + direction;
         Vector3 targetPosition = new Vector3(targetPos.x, targetPos.y, transform.position.z);
@@ -120,6 +119,7 @@ public class Player : MonoBehaviour
         {
             AudioManager.instance.PlaySFX(1);
             dustFx.Play();
+            playerBoxInteraction.SaveState(null, null);
             yield return PerformMove(transform.position, targetPosition, timeToMove);
         }
         else
@@ -158,6 +158,9 @@ public class Player : MonoBehaviour
         // else if (xInput > 0)
         //     transform.localScale = new Vector3(1, 1, 1);
         // Get joystick input instead of keyboard only
+        if (isDraggingMode)
+            return;
+        
         Vector2 input = joyStick.Direction;
     
         // Use the last movement direction if there's no current input

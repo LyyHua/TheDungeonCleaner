@@ -15,6 +15,9 @@ public class PlayerBoxInteraction : MonoBehaviour
     [SerializeField] private LayerMask boxLayer;
     private Vector2 lastProcessedDragInput = Vector2.zero;
     private bool hasDragInputChanged = false;
+    private Vector2 savedLastInputDirection;
+    public bool isBoxHighlighted => highlightedBox != null;
+    public bool hasGrabbableBoxInRange => highlightedBox != null;
 
     [Header("Movement Settings")]
     [SerializeField] private float moveDuration = 0.135f;
@@ -25,7 +28,7 @@ public class PlayerBoxInteraction : MonoBehaviour
 
     private Box currentBox;
     private Box highlightedBox;
-    private bool isDragging = false;
+    public bool isDragging = false;
     private Vector2 lastInputDirection = Vector2.right;
     private Vector2 grabDirection = Vector2.zero;
     private bool isMoving = false;
@@ -160,7 +163,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         }
     }
 
-    private void TryGrabBox()
+    public void TryGrabBox()
     {
         if (lastInputDirection == Vector2.zero)
         {
@@ -177,23 +180,33 @@ public class PlayerBoxInteraction : MonoBehaviour
         currentBox = hit.GetComponent<Box>();
         grabDirection = lastInputDirection.normalized;
         isDragging = true;
+        
+        savedLastInputDirection = lastInputDirection;
 
         currentBox.SetOutlineColor(false);
-
-        if (playerComponent)
-            playerComponent.SetDraggingMode(true);
+        playerComponent.SetDraggingMode(true);
     }
 
-    private void ReleaseBox()
+    public void ReleaseBox()
     {
         AudioManager.instance.PlaySFX(11);
         isDragging = false;
-
-        if (playerComponent)
-            playerComponent.SetDraggingMode(false);
+        
+        lastInputDirection = savedLastInputDirection;
+        
+        playerComponent.SetDraggingMode(false);
+        
+        playerComponent.lastMovementDirection = savedLastInputDirection;
+        
+        if (savedLastInputDirection.x < 0)
+            playerTransform.localScale = new Vector3(-1, 1, 1);
+        else if (savedLastInputDirection.x > 0)
+            playerTransform.localScale = new Vector3(1, 1, 1);
         
         currentBox.SetOutlineColor(true);
+        highlightedBox = currentBox;
         currentBox = null;
+        
         grabDirection = Vector2.zero;
     }
 
@@ -254,7 +267,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         undoStack.Push((playerTransform.position, lastInputDirection, box, boxPos));
     }
 
-    private void UndoMove()
+    public void UndoMove()
     {
         if (undoStack.Count <= 0)
             return;
@@ -286,7 +299,7 @@ public class PlayerBoxInteraction : MonoBehaviour
             box.transform.position = boxPos.Value;
     }
 
-    private void ResetLevel()
+    public void ResetLevel()
     {
         AudioManager.instance.PlaySFX(9);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
