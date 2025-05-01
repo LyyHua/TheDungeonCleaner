@@ -21,19 +21,21 @@ public class Player : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Sprite[] availableSkins;
     [SerializeField] private ParticleSystem dustFx;
+    
+    [Header("Touch Controls")]
+    private Vector2 currentButtonInput = Vector2.zero;
+    private bool isButtonPressed = false;
 
     private bool isMoving;
     private Vector2 origPos;
     private float xInput;
     private float yInput;
     private PlayerBoxInteraction playerBoxInteraction;
-    private Joystick joyStick;
 
     private void Awake()
     {
         playerBoxInteraction = GetComponent<PlayerBoxInteraction>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        joyStick = FindFirstObjectByType<Joystick>();
     }
 
     private void Start()
@@ -53,30 +55,21 @@ public class Player : MonoBehaviour
 
     public Vector2 GetMovementDirection()
     {
-        Vector2 input = Vector2.zero;
+        if (isButtonPressed)
+            return currentButtonInput;
         
-        // Mobile Input
-        input = new Vector2(joyStick.Horizontal, joyStick.Vertical);
-        
-        // PC Input (temporarily disabled for mobile development)
-        /*
+#if UNITY_EDITOR
         if (Input.GetKey(KeyCode.W))
-            input = Vector2.up;
+            return Vector2.up;
         else if (Input.GetKey(KeyCode.S))
-            input = Vector2.down;
+            return Vector2.down;
         else if (Input.GetKey(KeyCode.D))
-            input = Vector2.right;
+            return Vector2.right;
         else if (Input.GetKey(KeyCode.A))
-            input = Vector2.left;
-        */
-        
-        // Use a threshold before calculating dominant direction.
-        if (!(Mathf.Abs(input.x) > 0.1f) && !(Mathf.Abs(input.y) > 0.1f)) return Vector2.zero;
-        
-        // Determine dominant direction.
-        if (Mathf.Abs(input.x) >= Mathf.Abs(input.y))
-            return (input.x > 0) ? Vector2.right : Vector2.left;
-        return (input.y > 0) ? Vector2.up : Vector2.down;
+            return Vector2.left;
+#endif
+
+        return Vector2.zero;
     }
 
     private void HandleInput()
@@ -152,34 +145,14 @@ public class Player : MonoBehaviour
 
     private void HandleFlip()
     {
-        // xInput = Input.GetAxisRaw("Horizontal");
-        // if (xInput < 0)
-        //     transform.localScale = new Vector3(-1, 1, 1);
-        // else if (xInput > 0)
-        //     transform.localScale = new Vector3(1, 1, 1);
-        // Get joystick input instead of keyboard only
         if (isDraggingMode)
             return;
-        
-        Vector2 input = joyStick.Direction;
-    
-        // Use the last movement direction if there's no current input
-        if (input.magnitude < 0.1f)
-        {
-            // Flip based on last movement direction
-            if (lastMovementDirection.x < 0)
-                transform.localScale = new Vector3(-1, 1, 1);
-            else if (lastMovementDirection.x > 0)
-                transform.localScale = new Vector3(1, 1, 1);
-        }
-        // Otherwise flip based on current input
-        else if (Mathf.Abs(input.x) > 0.1f)
-        {
-            if (input.x < 0)
-                transform.localScale = new Vector3(-1, 1, 1);
-            else if (input.x > 0)
-                transform.localScale = new Vector3(1, 1, 1);
-        }
+
+        // Flip based on either current input or last movement direction
+        if (currentButtonInput.x < 0 || (currentButtonInput == Vector2.zero && lastMovementDirection.x < 0))
+            transform.localScale = new Vector3(-1, 1, 1);
+        else if (currentButtonInput.x > 0 || (currentButtonInput == Vector2.zero && lastMovementDirection.x > 0))
+            transform.localScale = new Vector3(1, 1, 1);
     }
 
     public void ResetState()
@@ -209,5 +182,11 @@ public class Player : MonoBehaviour
     public void SetDraggingMode(bool isDragging)
     {
         isDraggingMode = isDragging;
+    }
+    
+    public void SetDirectionalInput(Vector2 direction, bool pressed)
+    {
+        currentButtonInput = direction;
+        isButtonPressed = pressed;
     }
 }

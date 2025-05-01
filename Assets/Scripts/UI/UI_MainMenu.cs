@@ -13,6 +13,12 @@ public class UI_MainMenu : MonoBehaviour
     private void Awake()
     {
         fadeEffect = GetComponentInChildren<UI_FadeEffect>();
+
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+        Screen.SetResolution(Screen.width, Screen.height, FullScreenMode.FullScreenWindow,
+            new RefreshRate() { numerator = 60, denominator = 1 });
+        Time.timeScale = 1;
     }
     
     private void Start()
