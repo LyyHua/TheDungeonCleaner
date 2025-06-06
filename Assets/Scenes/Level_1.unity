@@ -3124,7 +3124,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -62, y: -668}
+  m_AnchoredPosition: {x: -84, y: -679}
   m_SizeDelta: {x: 1000, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &224681850
@@ -7446,7 +7446,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -422, y: -616}
+  m_AnchoredPosition: {x: -465, y: -638}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &1798572266
@@ -8099,6 +8099,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -161
       objectReference: {fileID: 0}
+    - target: {fileID: 8662725075410425497, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+      propertyPath: speedUpButton
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8662725075410425497, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+      propertyPath: freezeTimeButton
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8944281948352935428, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -8184,12 +8192,13 @@ PrefabInstance:
     - {fileID: 4934505903872386220, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
     - {fileID: 5177425530651081744, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
     - {fileID: 1004154680889235913, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+    - {fileID: 2888356230209310921, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8944281948352935428, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
-      insertIndex: 8
+      insertIndex: 7
       addedObject: {fileID: 1486904193}
     - targetCorrespondingSourceObject: {fileID: 8944281948352935428, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
-      insertIndex: 10
+      insertIndex: 9
       addedObject: {fileID: 1665075366}
     - targetCorrespondingSourceObject: {fileID: 8944281948352935428, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
       insertIndex: -1

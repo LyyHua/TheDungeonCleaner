@@ -4692,6 +4692,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8581009013109847217, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8582036477716891851, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -4781,7 +4785,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8271292417765066491, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+    - {fileID: 2948070138616033921, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+    - {fileID: 2563814851134355858, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+    - {fileID: 1004154680889235913, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+    - {fileID: 2888356230209310921, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}

@@ -18,6 +18,8 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private GameObject grabButton;
     [SerializeField] private Button freezeTimeButton;
     [SerializeField] private Button speedUpButton;
+    [SerializeField] private Button checkPointButton;
+    [SerializeField] private Button lastResortButton;
     
     private bool freezeTimeOnCooldown = false;
     private bool speedUpOnCooldown = false;
@@ -218,12 +220,7 @@ public class UI_InGame : MonoBehaviour
         GameManager.instance.FreezeTime(60f);
         timerText.color = Color.cyan;
         Invoke(nameof(ResetTimerTextColor), 60f);
-        
-        freezeTimeOnCooldown = true;
-        freezeTimeCooldownRemaining = 60f;
-        freezeTimeButton.interactable = false;
-        freezeTimeImage.color = new Color(1f, 1f, 1f, 1f);
-        freezeTimeImage.fillAmount = 0f;
+        freezeTimeButton.gameObject.SetActive(false);
     }
 
     private void ResetTimerTextColor()
@@ -234,12 +231,17 @@ public class UI_InGame : MonoBehaviour
     public void OnSpeedUpButtonPressed()
     {
         StartCoroutine(HandleSpeedUpBooster(60f));
-        
-        speedUpOnCooldown = true;
-        speedUpCooldownRemaining = 60f;
-        speedUpButton.interactable = false;
-        speedUpImage.color = new Color(1f, 1f, 1f, 1f);
-        speedUpImage.fillAmount = 0f;
+        speedUpButton.gameObject.SetActive(false);
+    }
+    
+    public void OnCheckPointButtonPressed()
+    {
+        checkPointButton.gameObject.SetActive(false);
+    }
+
+    public void OnLastResortButtonPressed()
+    {
+        lastResortButton.gameObject.SetActive(false);
     }
 
     private IEnumerator HandleSpeedUpBooster(float duration)
