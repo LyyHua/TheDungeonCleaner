@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     
     private UI_InGame inGameUI;
+    [SerializeField] private GameObject loseUI;
+    [SerializeField] private GameObject winUI;
 
     [Header("Level Management")]
     [SerializeField] private float levelTimer;
@@ -118,17 +120,21 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (!freezeTimeActive && levelTimer < maxLevelTime)
+        // Only update timer if level hasn't been completed yet
+        if (!levelFinishProcessed)
         {
-            levelTimer += Time.deltaTime;
-        }
-    
-        float remainingTime = maxLevelTime - levelTimer;
-        UI_InGame.instance.UpdateTimerUI(remainingTime);
-    
-        if (remainingTime <= 0f)
-        {
-            TimeOut();
+            if (!freezeTimeActive && levelTimer < maxLevelTime)
+            {
+                levelTimer += Time.deltaTime;
+            }
+
+            float remainingTime = maxLevelTime - levelTimer;
+            UI_InGame.instance.UpdateTimerUI(remainingTime);
+
+            if (remainingTime <= 0f)
+            {
+                TimeOut();
+            }
         }
     }
     
@@ -164,7 +170,17 @@ public class GameManager : MonoBehaviour
     private void TimeOut()
     {
         CancelInvoke(nameof(CheckLevelCompletion));
-        inGameUI.fadeEffect.ScreenFade(1, 1.5f, ReturnToMainMenu);
+        if (loseUI != null)
+        {
+            loseUI.SetActive(true);
+            // Stop all player movement/input when showing lose UI
+            DisablePlayerControls();
+        }
+        else
+        {
+            // Fallback if UI not assigned
+            inGameUI.fadeEffect.ScreenFade(1, 1.5f, ReturnToMainMenu);
+        }
     }
 
     public void CheckLevelCompletion()
@@ -202,7 +218,34 @@ public class GameManager : MonoBehaviour
         AddLevelReward();
         SaveLevelProgression();
         SaveBestTime();
-        LoadNextScene();
+    
+        if (winUI != null)
+        {
+            winUI.SetActive(true);
+            // Stop all player movement/input when showing win UI
+            DisablePlayerControls();
+        }
+        else
+        {
+            // Fallback if UI not assigned
+            LoadNextScene();
+        }
+    }
+    
+    private void DisablePlayerControls()
+    {
+        // Disable player controls when showing result screens
+        Player[] players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            player.enabled = false;
+        }
+    
+        PlayerBoxInteraction[] interactions = FindObjectsByType<PlayerBoxInteraction>(FindObjectsSortMode.None);
+        foreach (var interaction in interactions)
+        {
+            interaction.enabled = false;
+        }
     }
 
     private void SaveBestTime()
@@ -280,5 +323,23 @@ public class GameManager : MonoBehaviour
         freezeTimeActive = true;
         yield return new WaitForSeconds(duration);
         freezeTimeActive = false;
+    }
+    
+    public void RestartLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void GoToNextLevel()
+    {
+        if (NoMoreLevels())
+            LoadLevelEnd();
+        else
+            LoadNextLevel();
+    }
+
+    public void GoToMainMenu()
+    {
+        ReturnToMainMenu();
     }
 }

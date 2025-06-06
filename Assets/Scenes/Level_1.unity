@@ -6991,6 +6991,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d5d7f45ef474b4c9ad537a47ab0299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loseUI: {fileID: 0}
+  winUI: {fileID: 0}
   levelTimer: 0
   maxLevelTime: 60
   currentLevelIndex: 0
@@ -7446,7 +7448,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -465, y: -638}
+  m_AnchoredPosition: {x: -514.7, y: -638}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &1798572266
@@ -7958,10 +7960,6 @@ PrefabInstance:
     - target: {fileID: 2232208085733783664, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2417344537617151409, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2563814851134355858, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
       propertyPath: m_Name

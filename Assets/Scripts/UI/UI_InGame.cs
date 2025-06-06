@@ -270,4 +270,16 @@ public class UI_InGame : MonoBehaviour
             interaction.SetMoveDuration(0.135f);
         }
     }
+    
+    public void OnNextLevelButtonClicked()
+    {
+        if (GameManager.instance != null)
+            GameManager.instance.GoToNextLevel();
+    }
+
+    public void OnRetryLevelButtonClicked()
+    {
+        if (GameManager.instance != null)
+            GameManager.instance.RestartLevel();
+    }
 }
