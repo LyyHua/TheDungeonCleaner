@@ -183,7 +183,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         
         savedLastInputDirection = lastInputDirection;
 
-        currentBox.SetOutlineColor(false);
+        currentBox.SetDraggingState(true);
         playerComponent.SetDraggingMode(true);
     }
 
@@ -196,6 +196,8 @@ public class PlayerBoxInteraction : MonoBehaviour
         
         playerComponent.SetDraggingMode(false);
         
+        playerComponent.SetDirectionalInput(Vector2.zero, false);
+        
         playerComponent.lastMovementDirection = savedLastInputDirection;
         
         if (savedLastInputDirection.x < 0)
@@ -203,6 +205,7 @@ public class PlayerBoxInteraction : MonoBehaviour
         else if (savedLastInputDirection.x > 0)
             playerTransform.localScale = new Vector3(1, 1, 1);
         
+        currentBox.SetDraggingState(false);
         currentBox.SetOutlineColor(true);
         highlightedBox = currentBox;
         currentBox = null;
@@ -279,11 +282,13 @@ public class PlayerBoxInteraction : MonoBehaviour
             isDragging = false;
             if (currentBox != null)
             {
+                currentBox.SetDraggingState(false); // Make sure box state is reset
                 currentBox.SetOutlineColor(true);
             }
             currentBox = null;
             grabDirection = Vector2.zero;
-            playerComponent.enabled = true;
+            playerComponent.SetDraggingMode(false); // Fix: properly reset player dragging state
+            playerComponent.SetDirectionalInput(Vector2.zero, false); // Reset any active inputs
         }
 
         var (playerPos, facingDirection, box, boxPos) = undoStack.Pop();

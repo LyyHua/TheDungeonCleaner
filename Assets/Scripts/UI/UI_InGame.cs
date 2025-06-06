@@ -35,11 +35,30 @@ public class UI_InGame : MonoBehaviour
     {
         instance = this;
         playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
-        fadeEffect = GetComponentInChildren<UI_FadeEffect>();
-        grabButtonImage = grabButton.GetComponent<Image>();
-        freezeTimeImage = freezeTimeButton.GetComponent<Image>();
-        speedUpImage = speedUpButton.GetComponent<Image>();
-        
+        if (playerBoxInteraction == null)
+        {
+            Debug.LogWarning("PlayerBoxInteraction not found. Attempting fallback.");
+            playerBoxInteraction = FindObjectOfType<PlayerBoxInteraction>();
+        }
+
+        // Ensure fadeEffect is assigned
+        fadeEffect = GetComponentInChildren<UI_FadeEffect>(true);
+        if (fadeEffect == null)
+        {
+            Debug.LogError("UI_FadeEffect is missing. Ensure it is added to the scene.");
+        }
+
+        // Ensure grabButtonImage is assigned
+        if (grabButton != null)
+        {
+            grabButtonImage = grabButton.GetComponent<Image>();
+        }
+        else
+        {
+            Debug.LogError("GrabButton is missing. Ensure it is assigned in the inspector.");
+        }
+
+        // Ensure cooldown overlays are set up
         SetupCooldownOverlay(freezeTimeImage);
         SetupCooldownOverlay(speedUpImage);
     }
@@ -172,11 +191,19 @@ public class UI_InGame : MonoBehaviour
     public void UpdateBoxUI(int occupiedBoxes, int totalBoxes)
     {
         boxText.text = occupiedBoxes + "/" + totalBoxes;
+        if (occupiedBoxes >= totalBoxes && totalBoxes > 0)
+            boxText.color = Color.green;
+        else
+            boxText.color = Color.white;
     }
     
     public void UpdatePlayerUI(int occupiedPoints, int totalPoints)
     {
         playerText.text = occupiedPoints + "/" + totalPoints;
+        if (occupiedPoints >= totalPoints && totalPoints > 0)
+            playerText.color = Color.green;
+        else
+            playerText.color = Color.white;
     }
 
     public void UpdateTimerUI(float timer)

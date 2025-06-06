@@ -106,6 +106,8 @@ MonoBehaviour:
   boxColor: {r: 1, g: 1, b: 1, a: 1}
   blackOutlineSprite: {fileID: 5584533179027898419, guid: e7aad2ffa02010f4db1119d68fd27777, type: 3}
   whiteOutlineSprite: {fileID: 7965355984883262689, guid: 2907df9bf080b18419e229650eb97964, type: 3}
+  greenOutlineSprite: {fileID: 2327849735997993272, guid: 97e84ebd24b6d2744942430650c846b0, type: 3}
+  orangeOutlineSprite: {fileID: -8550935496441939711, guid: 6c2287cf2ac5f44438fdfe18f17d9979, type: 3}
   dustFx: {fileID: 574992551771326929}
 --- !u!61 &2653550787796822357
 BoxCollider2D:
