@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Level Management")]
     [SerializeField] private float levelTimer;
-    [SerializeField] private float maxLevelTime = 60f;
+    [SerializeField] public float maxLevelTime = 60f;
     [SerializeField] private int currentLevelIndex;
     private int nextLevelIndex;
     

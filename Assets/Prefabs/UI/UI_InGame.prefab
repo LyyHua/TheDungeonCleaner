@@ -2274,7 +2274,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8124447849641290073}
         m_TargetAssemblyTypeName: UI_InGame, Assembly-CSharp
-        m_MethodName: OnCheckPointButtonPressed
+        m_MethodName: OnLastResortButtonPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7139,12 +7139,13 @@ MonoBehaviour:
   playerText: {fileID: 9023196199102881952}
   grabText: {fileID: 2576097790878115176}
   checkPointButtonText: {fileID: 412922639848455339}
+  lastResortEffect: {fileID: 0}
   pauseUI: {fileID: 8581009013109847217}
   grabButton: {fileID: 4214443338305687874}
   freezeTimeButton: {fileID: 2353890760752050662}
   speedUpButton: {fileID: 5743054374920302264}
   checkPointButton: {fileID: 6447205231165214684}
-  lastResortButton: {fileID: 0}
+  lastResortButton: {fileID: 2463807606282249076}
 --- !u!1 &5177425530651081744
 GameObject:
   m_ObjectHideFlags: 0

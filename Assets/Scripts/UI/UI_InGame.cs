@@ -15,6 +15,10 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerText;
     [SerializeField] private TextMeshProUGUI grabText;
     [SerializeField] private TextMeshProUGUI checkPointButtonText;
+    [SerializeField] private GameObject lastResortEffect;
+    private Image lastResortImage;
+    private bool lastResortAvailable = false;
+    private float lastResortThreshold = 60f;
 
     [SerializeField] private GameObject pauseUI;
     [SerializeField] private GameObject grabButton;
@@ -45,7 +49,7 @@ public class UI_InGame : MonoBehaviour
         if (playerBoxInteraction == null)
         {
             Debug.LogWarning("PlayerBoxInteraction not found. Attempting fallback.");
-            playerBoxInteraction = FindObjectOfType<PlayerBoxInteraction>();
+            playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
         }
 
         // Ensure fadeEffect is assigned
@@ -64,10 +68,14 @@ public class UI_InGame : MonoBehaviour
         {
             Debug.LogError("GrabButton is missing. Ensure it is assigned in the inspector.");
         }
-
-        // Ensure cooldown overlays are set up
-        SetupCooldownOverlay(freezeTimeImage);
-        SetupCooldownOverlay(speedUpImage);
+        
+        // Ensure lastResortEffect is assigned
+        if (lastResortButton != null)
+        {
+            lastResortImage = lastResortButton.GetComponent<Image>();
+            SetupCooldownOverlay(lastResortImage);
+            lastResortButton.interactable = false;
+        }
     }
 
     private void Start()
@@ -218,6 +226,23 @@ public class UI_InGame : MonoBehaviour
         int minutes = Mathf.FloorToInt(timer / 60f);
         int seconds = Mathf.FloorToInt(timer % 60f);
         timerText.text = $"Remaining time: {minutes:00}:{seconds:00}";
+        
+        if (timer <= lastResortThreshold && !lastResortAvailable && lastResortButton != null)
+        {
+            lastResortAvailable = true;
+            lastResortButton.interactable = true;
+            AudioManager.instance.PlaySFX(5); // Alert sound when available
+        
+            // Visual indication
+            StartCoroutine(PulseLastResortButton());
+        }
+    
+        // Update visual cooldown if not yet available
+        if (!lastResortAvailable && lastResortButton && lastResortImage)
+        {
+            float fillAmount = 1f - (timer - lastResortThreshold) / (GameManager.instance.maxLevelTime - lastResortThreshold);
+            lastResortImage.fillAmount = Mathf.Clamp01(fillAmount);
+        }
     }
     
     public void OnFreezeTimeButtonPressed()
@@ -249,6 +274,25 @@ public class UI_InGame : MonoBehaviour
 
     public void OnLastResortButtonPressed()
     {
+        if (!lastResortAvailable) return;
+    
+        // Try to find the effect if not directly assigned
+        if (lastResortEffect == null)
+        {
+            lastResortEffect = GameObject.FindGameObjectWithTag("LastResortEffect");
+        }
+    
+        // Activate the effect if found
+        if (lastResortEffect != null)
+        {
+            lastResortEffect.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("Last Resort effect not found. Make sure to assign it or tag it properly.");
+        }
+    
+        // Disable the button after use
         lastResortButton.gameObject.SetActive(false);
     }
 
@@ -313,8 +357,7 @@ public class UI_InGame : MonoBehaviour
     private void GoToCheckpoint()
     {
         // Reset any active dragging state
-        Player player = FindFirstObjectByType<Player>();
-        PlayerBoxInteraction playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
+        playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
 
         if (playerBoxInteraction != null && playerBoxInteraction.isDragging)
         {
@@ -368,5 +411,19 @@ public class UI_InGame : MonoBehaviour
 
         checkpointCreated = false;
         checkPointButtonText.text = "Create Checkpoint";
+    }
+    
+    private IEnumerator PulseLastResortButton()
+    {
+        Color originalColor = lastResortImage.color;
+        float pulseTime = 0.5f;
+    
+        for (int i = 0; i < 3; i++)
+        {
+            lastResortImage.color = Color.yellow;
+            yield return new WaitForSeconds(pulseTime);
+            lastResortImage.color = originalColor;
+            yield return new WaitForSeconds(pulseTime);
+        }
     }
 }
