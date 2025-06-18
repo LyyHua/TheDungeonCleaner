@@ -7793,6 +7793,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d5d7f45ef474b4c9ad537a47ab0299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loseUI: {fileID: 1852103756}
+  winUI: {fileID: 1852103755}
   levelTimer: 0
   maxLevelTime: 60
   currentLevelIndex: 0
@@ -8310,6 +8312,16 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+--- !u!1 &1852103755 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2628919473638455091, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+  m_PrefabInstance: {fileID: 1852103754}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1852103756 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 988755341451415830, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+  m_PrefabInstance: {fileID: 1852103754}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1968123682
 PrefabInstance:
   m_ObjectHideFlags: 0

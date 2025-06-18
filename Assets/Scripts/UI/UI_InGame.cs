@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,6 +14,7 @@ public class UI_InGame : MonoBehaviour
     [SerializeField] private TextMeshProUGUI boxText;
     [SerializeField] private TextMeshProUGUI playerText;
     [SerializeField] private TextMeshProUGUI grabText;
+    [SerializeField] private TextMeshProUGUI checkPointButtonText;
 
     [SerializeField] private GameObject pauseUI;
     [SerializeField] private GameObject grabButton;
@@ -25,6 +27,9 @@ public class UI_InGame : MonoBehaviour
     private bool speedUpOnCooldown = false;
     private float freezeTimeCooldownRemaining = 0f;
     private float speedUpCooldownRemaining = 0f;
+    private bool checkpointCreated = false;
+    private Dictionary<Transform, Vector3> savePositions = new();
+    private Vector2 savedPlayerDirection;
 
     private Image grabButtonImage;
     private Image freezeTimeImage;
@@ -236,7 +241,10 @@ public class UI_InGame : MonoBehaviour
     
     public void OnCheckPointButtonPressed()
     {
-        checkPointButton.gameObject.SetActive(false);
+        if (!checkpointCreated)
+            CreateCheckpoint();
+        else
+            GoToCheckpoint();
     }
 
     public void OnLastResortButtonPressed()
@@ -281,5 +289,84 @@ public class UI_InGame : MonoBehaviour
     {
         if (GameManager.instance != null)
             GameManager.instance.RestartLevel();
+    }
+    
+    private void CreateCheckpoint()
+    {
+        savePositions.Clear();
+        
+        Player[] players = FindObjectsByType<Player>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            savePositions[player.transform] = player.transform.position;
+        }
+        
+        Box[] boxes = FindObjectsByType<Box>(FindObjectsSortMode.None);
+        foreach (Box box in boxes)
+        {
+            savePositions[box.transform] = box.transform.position;
+        }
+        checkpointCreated = true;
+        checkPointButtonText.text = "Go to Checkpoint";
+    }
+
+    private void GoToCheckpoint()
+    {
+        // Reset any active dragging state
+        Player player = FindFirstObjectByType<Player>();
+        PlayerBoxInteraction playerBoxInteraction = FindFirstObjectByType<PlayerBoxInteraction>();
+
+        if (playerBoxInteraction != null && playerBoxInteraction.isDragging)
+        {
+            playerBoxInteraction.ReleaseBox();
+        }
+
+        // Restore saved positions
+        foreach (var kvp in savePositions)
+        {
+            if (kvp.Key != null)
+            {
+                kvp.Key.position = kvp.Value;
+
+                // Play dust effect for visual feedback
+                if (kvp.Key.GetComponent<Player>() != null)
+                {
+                    kvp.Key.GetComponent<Player>().PlayDustEffect();
+
+                    // Reset player direction
+                    kvp.Key.GetComponent<Player>().lastMovementDirection = savedPlayerDirection;
+
+                    // Apply player facing direction
+                    if (savedPlayerDirection.x < 0)
+                        kvp.Key.localScale = new Vector3(-1, 1, 1);
+                    else if (savedPlayerDirection.x > 0)
+                        kvp.Key.localScale = new Vector3(1, 1, 1);
+                }
+                else if (kvp.Key.GetComponent<Box>() != null)
+                {
+                    kvp.Key.GetComponent<Box>().PlayDustEffect();
+                    // First reset state so we can properly update it
+                    kvp.Key.GetComponent<Box>().SetOnPointState(false);
+                }
+            }
+        }
+
+        // Force check all box points to update box visual states
+        BoxPoint[] boxPoints = FindObjectsByType<BoxPoint>(FindObjectsSortMode.None);
+        foreach (var boxPoint in boxPoints)
+        {
+            // This will trigger the check for any boxes that were placed at their points
+            boxPoint.ForceRecalculateOccupation();
+        }
+
+        // Force update box and player counts to ensure UI is correct
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.UpdateBoxCount();
+            GameManager.instance.UpdatePlayerCount();
+        }
+
+        checkpointCreated = false;
+        checkPointButtonText.text = "Create Checkpoint";
     }
 }

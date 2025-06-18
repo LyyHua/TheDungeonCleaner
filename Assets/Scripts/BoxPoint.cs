@@ -50,4 +50,31 @@ public class BoxPoint : MonoBehaviour
             GameManager.instance.CheckLevelCompletion();
         }
     }
+    
+    public void ForceRecalculateOccupation()
+    {
+        // Check for any boxes at this point's position
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, centerTolerance);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag("Box"))
+            {
+                Box box = collider.GetComponent<Box>();
+                if (box != null && box.boxColor.Equals(requiredColor))
+                {
+                    float distance = Vector2.Distance(transform.position, collider.transform.position);
+                    if (distance <= centerTolerance)
+                    {
+                        isOccupied = true;
+                        box.SetOnPointState(true);
+                        GameManager.instance.UpdateBoxCount();
+                        return;
+                    }
+                }
+            }
+        }
+    
+        // No matching box found
+        isOccupied = false;
+    }
 }

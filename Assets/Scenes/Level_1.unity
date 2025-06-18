@@ -6991,8 +6991,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d5d7f45ef474b4c9ad537a47ab0299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loseUI: {fileID: 0}
-  winUI: {fileID: 0}
+  loseUI: {fileID: 4098827285817954638}
+  winUI: {fileID: 4098827285817954637}
   levelTimer: 0
   maxLevelTime: 60
   currentLevelIndex: 0
@@ -8230,6 +8230,16 @@ MonoBehaviour:
   fifthTutorial: {fileID: 1665075365}
   finalTutorial: {fileID: 1486904192}
   point: {fileID: 1833684907}
+--- !u!1 &4098827285817954637 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2628919473638455091, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+  m_PrefabInstance: {fileID: 4098827285817954634}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4098827285817954638 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 988755341451415830, guid: e6c4efce320fbc7489df1bcd42aaf0b5, type: 3}
+  m_PrefabInstance: {fileID: 4098827285817954634}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &7090161467817925755
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8402,11 +8412,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9079637733543717831, guid: 4c2c8b5803c8bd44d9c8c8a08d7eff5c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 16.005398
+      value: 16.847975
       objectReference: {fileID: 0}
     - target: {fileID: 9079637733543717831, guid: 4c2c8b5803c8bd44d9c8c8a08d7eff5c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0069226027
+      value: 0.000007390976
       objectReference: {fileID: 0}
     - target: {fileID: 9079637733543717831, guid: 4c2c8b5803c8bd44d9c8c8a08d7eff5c, type: 3}
       propertyPath: m_LocalPosition.z
